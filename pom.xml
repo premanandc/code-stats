@@ -289,6 +289,17 @@
                     </suppressionFiles>
                     <!-- Assembly analyzer can be slow, disable if not needed -->
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <!-- Restrict scan to project files only, exclude Maven cache -->
+                    <scanSet>
+                        <fileSet>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>**/*.jar</include>
+                            </includes>
+                        </fileSet>
+                    </scanSet>
+                    <!-- Exclude Maven cache and other system directories -->
+                    <skipSystemScope>true</skipSystemScope>
                 </configuration>
                 <executions>
                     <execution>
