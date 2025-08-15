@@ -1,5 +1,5 @@
+---
 languages:
-  # Web Development
   js: "JavaScript"
   jsx: "JavaScript"
   ts: "TypeScript"
@@ -12,8 +12,6 @@ languages:
   less: "Less"
   vue: "Vue"
   svelte: "Svelte"
-  
-  # Backend Languages
   java: "Java"
   py: "Python"
   rb: "Ruby"
@@ -39,8 +37,6 @@ languages:
   erl: "Erlang"
   ex: "Elixir"
   exs: "Elixir Script"
-  
-  # Scripting
   sh: "Shell"
   bash: "Bash"
   zsh: "Zsh"
@@ -48,8 +44,6 @@ languages:
   ps1: "PowerShell"
   bat: "Batch"
   cmd: "Command"
-  
-  # Data & Config
   sql: "SQL"
   json: "JSON"
   yaml: "YAML"
@@ -59,34 +53,28 @@ languages:
   ini: "INI"
   cfg: "Config"
   conf: "Config"
-  
-  # Mobile
   swift: "Swift"
   m: "Objective-C"
   mm: "Objective-C++"
   dart: "Dart"
-  
-  # Other
   r: "R"
   rmd: "R Markdown"
   jl: "Julia"
   lua: "Lua"
   pl: "Perl"
   pm: "Perl Module"
-  
-# Default directory patterns
 directories:
   production:
-    - "src"
-    - "lib"
-    - "app"
-    - "source"
-    - "main"
+  - "src"
+  - "lib"
+  - "app"
+  - "source"
+  - "main"
   test:
-    - "test"
-    - "tests"
-    - "__tests__"
-    - "spec"
-    - "specs"
-    - "cypress"
-    - "e2e"
+  - "test"
+  - "tests"
+  - "__tests__"
+  - "spec"
+  - "specs"
+  - "cypress"
+  - "e2e"
