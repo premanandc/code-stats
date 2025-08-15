@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!--
+    OWASP Dependency-Check Suppressions File
+    
+    This file contains suppressions for false positive vulnerabilities
+    found in our dependencies. Each suppression should include:
+    1. Reason for suppression
+    2. CVE being suppressed (if specific)
+    3. Affected dependency
+    
+    Only suppress vulnerabilities that are confirmed false positives
+    or have acceptable risk after security review.
+    -->
+    
+    <!-- Example suppression for a false positive:
+    <suppress>
+        <notes><![CDATA[
+            False positive - this vulnerability affects server-side usage only,
+            and we use this dependency only for client-side operations.
+        ]]></notes>
+        <cve>CVE-2023-12345</cve>
+        <filePath regex="true">.*jackson-databind.*\.jar</filePath>
+    </suppress>
+    -->
+    
+</suppressions>

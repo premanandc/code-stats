@@ -12,11 +12,12 @@
 
     <properties>
         <assertj.version>3.26.3</assertj.version>
+        <dependency-check.version>12.1.0</dependency-check.version>
         <findsecbugs.version>1.14.0</findsecbugs.version>
         <jackson.version>2.19.1</jackson.version>
 
         <!-- Dependency versions -->
-        <jgit.version>6.10.0.202406032230-r</jgit.version>
+        <jgit.version>7.3.0.202506031305-r</jgit.version>
         <junit.version>5.11.3</junit.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -257,6 +258,37 @@
                             <version>${findsecbugs.version}</version>
                         </plugin>
                     </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- OWASP Dependency-Check plugin for SCA (Software Composition Analysis) -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency-check.version}</version>
+                <configuration>
+                    <!-- Fail build on CVSS score >= 7.0 (High severity) -->
+                    <failBuildOnCVSS>7.0</failBuildOnCVSS>
+                    <!-- Skip analysis of test dependencies -->
+                    <skipTestScope>true</skipTestScope>
+                    <!-- Format for reports -->
+                    <formats>
+                        <format>HTML</format>
+                        <format>XML</format>
+                    </formats>
+                    <!-- Suppress false positives for build tools -->
+                    <suppressionFiles>
+                        <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                    </suppressionFiles>
+                    <!-- Assembly analyzer can be slow, disable if not needed -->
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                 </configuration>
                 <executions>
                     <execution>
