@@ -1,0 +1,92 @@
+languages:
+  # Web Development
+  js: "JavaScript"
+  jsx: "JavaScript"
+  ts: "TypeScript"
+  tsx: "TypeScript"
+  html: "HTML"
+  htm: "HTML"
+  css: "CSS"
+  scss: "SCSS"
+  sass: "Sass"
+  less: "Less"
+  vue: "Vue"
+  svelte: "Svelte"
+  
+  # Backend Languages
+  java: "Java"
+  py: "Python"
+  rb: "Ruby"
+  php: "PHP"
+  go: "Go"
+  rs: "Rust"
+  cpp: "C++"
+  cc: "C++"
+  cxx: "C++"
+  c: "C"
+  h: "C/C++ Header"
+  hpp: "C++ Header"
+  cs: "C#"
+  fs: "F#"
+  vb: "Visual Basic"
+  kt: "Kotlin"
+  kts: "Kotlin Script"
+  scala: "Scala"
+  clj: "Clojure"
+  cljs: "ClojureScript"
+  hs: "Haskell"
+  elm: "Elm"
+  erl: "Erlang"
+  ex: "Elixir"
+  exs: "Elixir Script"
+  
+  # Scripting
+  sh: "Shell"
+  bash: "Bash"
+  zsh: "Zsh"
+  fish: "Fish"
+  ps1: "PowerShell"
+  bat: "Batch"
+  cmd: "Command"
+  
+  # Data & Config
+  sql: "SQL"
+  json: "JSON"
+  yaml: "YAML"
+  yml: "YAML"
+  xml: "XML"
+  toml: "TOML"
+  ini: "INI"
+  cfg: "Config"
+  conf: "Config"
+  
+  # Mobile
+  swift: "Swift"
+  m: "Objective-C"
+  mm: "Objective-C++"
+  dart: "Dart"
+  
+  # Other
+  r: "R"
+  rmd: "R Markdown"
+  jl: "Julia"
+  lua: "Lua"
+  pl: "Perl"
+  pm: "Perl Module"
+  
+# Default directory patterns
+directories:
+  production:
+    - "src"
+    - "lib"
+    - "app"
+    - "source"
+    - "main"
+  test:
+    - "test"
+    - "tests"
+    - "__tests__"
+    - "spec"
+    - "specs"
+    - "cypress"
+    - "e2e"
