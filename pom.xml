@@ -172,8 +172,8 @@
                             <version>1.24.0</version>
                             <style>GOOGLE</style>
                         </googleJavaFormat>
-                        <removeUnusedImports/>
-                        <formatAnnotations/>
+                        <removeUnusedImports></removeUnusedImports>
+                        <formatAnnotations></formatAnnotations>
                         <importOrder>
                             <order>java|javax,org,com,</order>
                         </importOrder>
@@ -208,7 +208,7 @@
                         <excludes>
                             <exclude>target/**</exclude>
                         </excludes>
-                        <jackson/>
+                        <jackson></jackson>
                     </json>
 
                     <!-- YAML files -->
@@ -220,7 +220,7 @@
                         <excludes>
                             <exclude>target/**</exclude>
                         </excludes>
-                        <jackson/>
+                        <jackson></jackson>
                     </yaml>
 
                     <!-- Markdown files -->
@@ -228,7 +228,7 @@
                         <includes>
                             <include>${project.basedir}/**/*.md</include>
                         </includes>
-                        <flexmark/>
+                        <flexmark></flexmark>
                     </markdown>
                 </configuration>
                 <executions>
