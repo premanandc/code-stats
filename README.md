@@ -1,6 +1,7 @@
 # Code Stats
 
-A powerful git repository statistics tool for analyzing contributor activity, built with Java and Maven. Get detailed insights into commits, files changed, lines of code, and language-specific breakdowns.
+A powerful git repository statistics tool for analyzing contributor activity, built with Java and Maven. Get detailed
+insights into commits, files changed, lines of code, and language-specific breakdowns.
 
 ## Features
 
@@ -224,7 +225,7 @@ productionDirectories:
   - src/main
   - lib
   - packages
-  
+
 testDirectories:
   - src/test
   - test
@@ -271,4 +272,6 @@ This project includes comprehensive security analysis:
 
 - **Issues**: [GitHub Issues](https://github.com/premanandc/code-stats/issues)
 - **Documentation**: See [BUILD.md](BUILD.md) for detailed build instructions
-- **Security**: Report security issues privately via [GitHub Security Advisories](https://github.com/premanandc/code-stats/security)
+- **Security**: Report security issues privately
+  via [GitHub Security Advisories](https://github.com/premanandc/code-stats/security)
+
