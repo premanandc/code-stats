@@ -172,8 +172,8 @@
                             <version>1.24.0</version>
                             <style>GOOGLE</style>
                         </googleJavaFormat>
-                        <removeUnusedImports></removeUnusedImports>
-                        <formatAnnotations></formatAnnotations>
+                        <removeUnusedImports/>
+                        <formatAnnotations/>
                         <importOrder>
                             <order>java|javax,org,com,</order>
                         </importOrder>
@@ -203,32 +203,32 @@
                     <!-- JSON files -->
                     <json>
                         <includes>
-                            <include>**/*.json</include>
+                            <include>${project.basedir}/**/*.json</include>
                         </includes>
                         <excludes>
                             <exclude>target/**</exclude>
                         </excludes>
-                        <jackson></jackson>
+                        <jackson/>
                     </json>
 
                     <!-- YAML files -->
                     <yaml>
                         <includes>
-                            <include>**/*.yml</include>
-                            <include>**/*.yaml</include>
+                            <include>${project.basedir}/**/*.yml</include>
+                            <include>${project.basedir}/**/*.yaml</include>
                         </includes>
                         <excludes>
                             <exclude>target/**</exclude>
                         </excludes>
-                        <jackson></jackson>
+                        <jackson/>
                     </yaml>
 
                     <!-- Markdown files -->
                     <markdown>
                         <includes>
-                            <include>**/*.md</include>
+                            <include>${project.basedir}/**/*.md</include>
                         </includes>
-                        <flexmark></flexmark>
+                        <flexmark/>
                     </markdown>
                 </configuration>
                 <executions>
