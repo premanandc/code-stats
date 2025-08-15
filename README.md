@@ -17,8 +17,8 @@ A powerful git repository statistics tool for analyzing contributor activity, bu
 ### Download and Run
 
 ```bash
-# Download the latest release
-wget https://github.com/your-org/code-stats/releases/latest/code-stats-1.0.0.jar
+# Download the latest release from GitHub
+# Visit: https://github.com/premanandc/code-stats/releases
 
 # Run on current directory
 java -jar code-stats-1.0.0.jar
@@ -155,12 +155,12 @@ Options:
 
 ### Option 1: Download Release
 
-Download the latest JAR from the [releases page](https://github.com/your-org/code-stats/releases).
+Download the latest JAR from the [releases page](https://github.com/premanandc/code-stats/releases).
 
 ### Option 2: Build from Source
 
 ```bash
-git clone https://github.com/your-org/code-stats.git
+git clone https://github.com/premanandc/code-stats.git
 cd code-stats
 ./mvnw package
 java -jar target/code-stats-1.0.0.jar
@@ -249,7 +249,7 @@ See [BUILD.md](BUILD.md) for development setup, testing, and security analysis i
 ### Quick Development Setup
 
 ```bash
-git clone https://github.com/your-org/code-stats.git
+git clone https://github.com/premanandc/code-stats.git
 cd code-stats
 ./mvnw clean verify
 java -jar target/code-stats-1.0.0.jar --help
@@ -269,6 +269,6 @@ This project includes comprehensive security analysis:
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-org/code-stats/issues)
+- **Issues**: [GitHub Issues](https://github.com/premanandc/code-stats/issues)
 - **Documentation**: See [BUILD.md](BUILD.md) for detailed build instructions
-- **Security**: Report security issues privately via email to security@your-org.com
+- **Security**: Report security issues privately via [GitHub Security Advisories](https://github.com/premanandc/code-stats/security)
