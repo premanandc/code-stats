@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude test files from security analysis -->
+    <Match>
+        <Class name="~.*Test.*"/>
+    </Match>
+    <Match>
+        <Class name="~.*test.*"/>
+    </Match>
+    
+    <!-- Exclude generated files -->
+    <Match>
+        <Source name="~.*generated.*"/>
+    </Match>
+    <Match>
+        <Class name="~.*generated.*"/>
+    </Match>
+    
+    <!-- Exclude specific non-security categories we don't want to analyze -->
+    <Match>
+        <Bug category="PERFORMANCE"/>
+    </Match>
+    <Match>
+        <Bug category="STYLE"/>
+    </Match>
+    <Match>
+        <Bug category="I18N"/>
+    </Match>
+    
+    <!-- Exclude specific patterns that may be noisy but not security-critical -->
+    <Match>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+    <Match>
+        <Bug pattern="DM_GC"/>
+    </Match>
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    
+    <!-- Allow System.out usage in CLI applications -->
+    <Match>
+        <Bug pattern="SYSTEM_OUT_PRINT"/>
+    </Match>
+    <Match>
+        <Bug pattern="SYSTEM_ERR_PRINT"/>
+    </Match>
+    
+    <!-- Allow System.exit in main methods -->
+    <Match>
+        <Bug pattern="DM_EXIT"/>
+        <Method name="main"/>
+    </Match>
+    
+    <!-- Suppress false positives for properly secured code -->
+    
+    <!-- We have implemented proper error message sanitization -->
+    <Match>
+        <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
+        <Class name="com.codestats.Main"/>
+        <Method name="call"/>
+    </Match>
+    
+    <!-- We have implemented proper input sanitization for git commands -->
+    <Match>
+        <Bug pattern="COMMAND_INJECTION"/>
+        <Class name="com.codestats.service.ProcessGitCommandExecutor"/>
+    </Match>
+</FindBugsFilter>

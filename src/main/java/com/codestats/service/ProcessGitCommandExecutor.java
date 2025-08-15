@@ -69,18 +69,21 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
     command.add("--date=iso");
     command.add("--no-merges"); // Skip merge commits for cleaner stats
 
-    // Date filters
+    // Date filters with proper sanitization
     if (since != null) {
-      command.add("--since=" + formatDateForGit(since));
+      command.add("--since=" + sanitizeGitParameter(formatDateForGit(since)));
     }
     if (until != null) {
-      command.add("--until=" + formatDateForGit(until));
+      command.add("--until=" + sanitizeGitParameter(formatDateForGit(until)));
     }
 
-    // User filters
+    // User filters with sanitization
     if (includeUsers != null && !includeUsers.isEmpty()) {
       for (String user : includeUsers) {
-        command.add("--author=" + user);
+        String sanitizedUser = sanitizeGitParameter(user);
+        if (sanitizedUser != null) {
+          command.add("--author=" + sanitizedUser);
+        }
       }
     }
 
@@ -88,5 +91,37 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
     // Git doesn't have a direct --exclude-author option
 
     return command;
+  }
+
+  /**
+   * Sanitize git command parameters to prevent command injection. Only allows safe characters for
+   * git parameters.
+   */
+  private String sanitizeGitParameter(String parameter) {
+    if (parameter == null || parameter.trim().isEmpty()) {
+      return null;
+    }
+
+    // Remove leading/trailing whitespace
+    String sanitized = parameter.trim();
+
+    // Only allow alphanumeric characters, dots, dashes, underscores, @, spaces, and colons (for
+    // dates/emails)
+    if (!sanitized.matches("[\\w\\s@.:-]+")) {
+      throw new IllegalArgumentException("Invalid characters in git parameter: " + parameter);
+    }
+
+    // Prevent command injection patterns
+    if (sanitized.contains("&&")
+        || sanitized.contains("||")
+        || sanitized.contains(";")
+        || sanitized.contains("|")
+        || sanitized.contains("$(")
+        || sanitized.contains("`")
+        || sanitized.contains("$")) {
+      throw new IllegalArgumentException("Potentially dangerous git parameter: " + parameter);
+    }
+
+    return sanitized;
   }
 }

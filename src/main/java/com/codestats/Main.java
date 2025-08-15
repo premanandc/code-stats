@@ -148,7 +148,9 @@ public class Main implements Callable<Integer> {
       return result.isSuccess() ? 0 : 1;
 
     } catch (Exception e) {
-      System.err.println("Error: " + e.getMessage());
+      // Sanitize error message to avoid information exposure
+      String sanitizedMessage = sanitizeErrorMessage(e.getMessage());
+      System.err.println("Error: " + sanitizedMessage);
       if (System.getProperty("debug") != null) {
         e.printStackTrace();
       }
@@ -411,5 +413,29 @@ public class Main implements Callable<Integer> {
 
               # Add your email aliases here
             """;
+  }
+
+  /**
+   * Sanitize error message to prevent information exposure through error messages. Removes
+   * potentially sensitive file paths and internal details.
+   */
+  private String sanitizeErrorMessage(String message) {
+    if (message == null) {
+      return "An error occurred during processing";
+    }
+
+    // Remove absolute file paths that might expose system structure
+    String sanitized = message.replaceAll("/[\\w/.-]+", "<path>");
+    sanitized = sanitized.replaceAll("\\\\[\\w\\\\.-]+", "<path>");
+
+    // Remove class names that might expose internal structure
+    sanitized = sanitized.replaceAll("\\w+(\\.\\w+)+", "<internal>");
+
+    // If message becomes too generic, provide a safe generic message
+    if (sanitized.length() < 10 || sanitized.equals("<internal>")) {
+      return "An error occurred during processing";
+    }
+
+    return sanitized;
   }
 }
