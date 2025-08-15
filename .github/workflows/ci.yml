@@ -1,43 +1,67 @@
 ---
-name: "CI"
-"on":
+name: CI
+on:
   push:
     branches:
-    - "main"
-    - "develop"
+      - main
+      - develop
   pull_request:
     branches:
-    - "main"
+      - main
+
 jobs:
   test:
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
+    env:
+      # Pass the NVD API key to Maven (masked by GitHub Actions)
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      MAVEN_OPTS: -Dmaven.repo.local=~/.m2/repository
+
     steps:
-    - name: "Checkout code"
-      uses: "actions/checkout@v4"
-    - name: "Set up JDK 17"
-      uses: "actions/setup-java@v4"
-      with:
-        java-version: "17"
-        distribution: "temurin"
-    - name: "Cache Maven packages"
-      uses: "actions/cache@v4"
-      with:
-        path: "~/.m2"
-        key: "${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}"
-        restore-keys: "${{ runner.os }}-m2"
-    - name: "Run tests"
-      run: "./mvnw clean test -B"
-    - name: "Run security analysis"
-      run: "./mvnw spotbugs:check -B\n./mvnw dependency-check:check -B\n"
-    - name: "Run code formatting check"
-      run: "./mvnw spotless:check -B"
-    - name: "Build JAR"
-      run: "./mvnw package -B -DskipTests"
-    - name: "Upload build artifacts"
-      uses: "actions/upload-artifact@v4"
-      if: "always()"
-      with:
-        name: "build-reports"
-        path: "target/code-stats-1.0.0.jar\ntarget/dependency-check-report.html\n\
-          target/spotbugs.xml\ntarget/surefire-reports/\n"
-        retention-days: 7
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          # Caches ~/.m2 automatically
+          cache: "maven"
+
+      # Cache the OWASP Dependency-Check local DB so it doesn't fully re-download each run
+      - name: Cache Dependency-Check DB
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository/org/owasp/dependency-check-data
+          key: ${{ runner.os }}-dcdb-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-dcdb-
+
+      - name: Run tests
+        run: ./mvnw clean test -B
+
+      - name: Run security analysis (SpotBugs + OWASP Dependency-Check)
+        run: |
+          ./mvnw spotbugs:check -B
+          # Pass the API key explicitly so it works even if pom.xml isn't configured for env var
+          ./mvnw dependency-check:check -B -DnvdApiKey="${NVD_API_KEY}"
+
+      - name: Run code formatting check
+        run: ./mvnw spotless:check -B
+
+      - name: Build JAR
+        run: ./mvnw package -B -DskipTests
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            target/code-stats-1.0.0.jar
+            target/dependency-check-report.html
+            target/spotbugs.xml
+            target/surefire-reports/
+          retention-days: 7
