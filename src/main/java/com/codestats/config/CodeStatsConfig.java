@@ -39,6 +39,7 @@ public record CodeStatsConfig(
 
     // Web Development
     languages.put("js", "JavaScript");
+    languages.put("mjs", "JavaScript");
     languages.put("jsx", "JavaScript");
     languages.put("ts", "TypeScript");
     languages.put("tsx", "TypeScript");
@@ -74,6 +75,7 @@ public record CodeStatsConfig(
     languages.put("xml", "XML");
     languages.put("toml", "TOML");
     languages.put("md", "Markdown");
+    languages.put("mdc", "Markdown");
     languages.put("markdown", "Markdown");
 
     // Mobile

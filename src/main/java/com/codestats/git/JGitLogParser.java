@@ -41,7 +41,7 @@ public class JGitLogParser implements GitLogParser {
     List<GitCommit> commits = new ArrayList<>();
     for (String block : commitBlocks) {
       String trimmed = block.trim();
-      if (trimmed.isEmpty() || !trimmed.startsWith("commit")) continue;
+      if (!trimmed.startsWith("commit")) continue;
 
       parseCommit(trimmed).ifPresent(commits::add);
     }

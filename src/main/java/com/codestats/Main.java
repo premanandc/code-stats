@@ -98,7 +98,7 @@ public class Main implements Callable<Integer> {
   }
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     try {
       // Handle init-config option
       if (initConfig) {
