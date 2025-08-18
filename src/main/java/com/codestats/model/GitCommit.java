@@ -30,20 +30,40 @@ public record GitCommit(
     return fileChanges.size();
   }
 
-  /** Group file changes by language based on file extensions */
+  /** Group file changes by language based on file extensions and filenames */
   public Map<String, List<FileChange>> getChangesByLanguage(
-      Map<String, String> extensionToLanguage) {
+      Map<String, String> extensionToLanguage, Map<String, String> filenameToLanguage) {
     return fileChanges.stream()
         .collect(
             java.util.stream.Collectors.groupingBy(
-                fileChange -> getLanguageForFile(fileChange.path(), extensionToLanguage)));
+                fileChange ->
+                    getLanguageForFile(
+                        fileChange.path(), extensionToLanguage, filenameToLanguage)));
   }
 
-  private String getLanguageForFile(String filePath, Map<String, String> extensionToLanguage) {
+  private String getLanguageForFile(
+      String filePath,
+      Map<String, String> extensionToLanguage,
+      Map<String, String> filenameToLanguage) {
     int lastDot = filePath.lastIndexOf('.');
-    if (lastDot == -1) return "Unknown";
+    String fileName = filePath.substring(filePath.lastIndexOf('/') + 1).toLowerCase();
 
+    // First check if the complete filename (without path) matches our filename mappings
+    if (filenameToLanguage.containsKey(fileName)) {
+      return filenameToLanguage.get(fileName);
+    }
+
+    // Handle files without extensions
+    if (lastDot == -1) {
+      return "Unknown";
+    }
+
+    // Check for extension mapping, but only if the extension doesn't contain slashes
     String extension = filePath.substring(lastDot + 1).toLowerCase();
-    return extensionToLanguage.getOrDefault(extension, "Unknown");
+    if (!extension.contains("/")) {
+      return extensionToLanguage.getOrDefault(extension, "Unknown");
+    }
+
+    return "Unknown";
   }
 }

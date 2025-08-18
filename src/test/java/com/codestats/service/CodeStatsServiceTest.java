@@ -125,6 +125,7 @@ class CodeStatsServiceTest {
     CodeStatsConfig config =
         new CodeStatsConfig(
             Map.of("java", "Java"),
+            Map.of(),
             List.of("src"),
             List.of("test"),
             Map.of("alice@company.com", Set.of("alice@personal.com")));

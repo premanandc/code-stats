@@ -18,7 +18,8 @@ public interface StatisticsAggregator {
    *
    * @param commits List of git commits to analyze
    * @param identities Map of canonical email to contributor identity
-   * @param languageMapping Map of file extension to language name
+   * @param extensionMapping Map of file extension to language name
+   * @param filenameMapping Map of filename to language name
    * @param productionPatterns Patterns to identify production code directories
    * @param testPatterns Patterns to identify test code directories
    * @return List of contributor statistics sorted by contribution size
@@ -26,7 +27,8 @@ public interface StatisticsAggregator {
   List<ContributorStats> aggregateStatistics(
       List<GitCommit> commits,
       Map<String, ContributorIdentity> identities,
-      Map<String, String> languageMapping,
+      Map<String, String> extensionMapping,
+      Map<String, String> filenameMapping,
       List<String> productionPatterns,
       List<String> testPatterns);
 
@@ -71,17 +73,34 @@ public interface StatisticsAggregator {
   }
 
   /**
-   * Get the language for a file based on its extension.
+   * Get the language for a file based on its extension or filename.
    *
    * @param filePath File path
-   * @param languageMapping Map of extension to language
+   * @param extensionMapping Map of extension to language
+   * @param filenameMapping Map of filename to language
    * @return Language name or "Unknown"
    */
-  default String getLanguageForFile(String filePath, Map<String, String> languageMapping) {
+  default String getLanguageForFile(
+      String filePath, Map<String, String> extensionMapping, Map<String, String> filenameMapping) {
     int lastDot = filePath.lastIndexOf('.');
-    if (lastDot == -1) return "Unknown";
+    String fileName = filePath.substring(filePath.lastIndexOf('/') + 1).toLowerCase();
 
+    // First check if the complete filename (without path) matches our filename mappings
+    if (filenameMapping.containsKey(fileName)) {
+      return filenameMapping.get(fileName);
+    }
+
+    // Handle files without extensions
+    if (lastDot == -1) {
+      return "Unknown";
+    }
+
+    // Check for extension mapping, but only if the extension doesn't contain slashes
     String extension = filePath.substring(lastDot + 1).toLowerCase();
-    return languageMapping.getOrDefault(extension, "Unknown");
+    if (!extension.contains("/")) {
+      return extensionMapping.getOrDefault(extension, "Unknown");
+    }
+
+    return "Unknown";
   }
 }

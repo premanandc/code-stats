@@ -15,7 +15,8 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
   public List<ContributorStats> aggregateStatistics(
       List<GitCommit> commits,
       Map<String, ContributorIdentity> identities,
-      Map<String, String> languageMapping,
+      Map<String, String> extensionMapping,
+      Map<String, String> filenameMapping,
       List<String> productionPatterns,
       List<String> testPatterns) {
     if (commits == null || commits.isEmpty()) {
@@ -59,7 +60,12 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
 
       ContributorStats stats =
           aggregateContributorStats(
-              identity, contributorCommits, languageMapping, productionPatterns, testPatterns);
+              identity,
+              contributorCommits,
+              extensionMapping,
+              filenameMapping,
+              productionPatterns,
+              testPatterns);
 
       allStats.add(stats);
     }
@@ -81,7 +87,8 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
   private ContributorStats aggregateContributorStats(
       ContributorIdentity identity,
       List<GitCommit> commits,
-      Map<String, String> languageMapping,
+      Map<String, String> extensionMapping,
+      Map<String, String> filenameMapping,
       List<String> productionPatterns,
       List<String> testPatterns) {
     int totalCommits = commits.size();
@@ -90,7 +97,8 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
     int totalFilesChanged = commits.stream().mapToInt(GitCommit::filesChangedCount).sum();
 
     // Aggregate language statistics
-    Map<String, LanguageStats> languageStats = aggregateLanguageStats(commits, languageMapping);
+    Map<String, LanguageStats> languageStats =
+        aggregateLanguageStats(commits, extensionMapping, filenameMapping);
 
     // Aggregate production vs test lines
     Map<String, Integer> productionLines = new HashMap<>();
@@ -98,7 +106,7 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
 
     for (GitCommit commit : commits) {
       for (FileChange fileChange : commit.fileChanges()) {
-        String language = getLanguageForFile(fileChange.path(), languageMapping);
+        String language = getLanguageForFile(fileChange.path(), extensionMapping, filenameMapping);
         int totalLines = fileChange.totalLinesChanged();
 
         if (isProductionCode(fileChange.path(), productionPatterns, testPatterns)) {
@@ -125,13 +133,15 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
 
   /** Aggregate language statistics from commits. */
   private Map<String, LanguageStats> aggregateLanguageStats(
-      List<GitCommit> commits, Map<String, String> languageMapping) {
+      List<GitCommit> commits,
+      Map<String, String> extensionMapping,
+      Map<String, String> filenameMapping) {
     Map<String, List<FileChange>> changesByLanguage = new HashMap<>();
 
     // Group all file changes by language
     for (GitCommit commit : commits) {
       for (FileChange fileChange : commit.fileChanges()) {
-        String language = getLanguageForFile(fileChange.path(), languageMapping);
+        String language = getLanguageForFile(fileChange.path(), extensionMapping, filenameMapping);
         changesByLanguage.computeIfAbsent(language, k -> new ArrayList<>()).add(fileChange);
       }
     }

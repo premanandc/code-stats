@@ -179,6 +179,7 @@ public class Main implements Callable<Integer> {
           config.mergeWith(
               new CodeStatsConfig(
                   customLangMap,
+                  Map.of(),
                   config.productionDirectories(),
                   config.testDirectories(),
                   config.aliases()));
@@ -200,17 +201,18 @@ public class Main implements Callable<Integer> {
     Map<String, Object> configMap = yamlMapper.readValue(configFile, Map.class);
 
     // Extract each section with proper type handling
-    Map<String, String> languages = extractLanguages(configMap);
+    Map<String, String> extensions = extractLanguages(configMap, "extensions");
+    Map<String, String> filenames = extractLanguages(configMap, "filenames");
     List<String> productionDirs = extractStringList(configMap, "productionDirectories");
     List<String> testDirs = extractStringList(configMap, "testDirectories");
     Map<String, Set<String>> aliases = extractAliases(configMap);
 
-    return new CodeStatsConfig(languages, productionDirs, testDirs, aliases);
+    return new CodeStatsConfig(extensions, filenames, productionDirs, testDirs, aliases);
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> extractLanguages(Map<String, Object> configMap) {
-    Object languagesObj = configMap.get("languages");
+  private Map<String, String> extractLanguages(Map<String, Object> configMap, String sectionName) {
+    Object languagesObj = configMap.get(sectionName);
     if (languagesObj instanceof Map) {
       Map<String, Object> languagesMap = (Map<String, Object>) languagesObj;
       Map<String, String> result = new java.util.HashMap<>();
@@ -333,7 +335,7 @@ public class Main implements Callable<Integer> {
 
             # Language Detection
             # Maps file extensions to language names for statistics
-            languages:
+            extensions:
               # Web Development
               js: JavaScript
               jsx: JavaScript
@@ -379,6 +381,25 @@ public class Main implements Callable<Integer> {
 
               # Add your custom extensions here:
               # myext: "My Language"
+
+            # Language Detection for Files Without Extensions
+            # Maps specific filenames to language names
+            filenames:
+              # DevOps and Build Files
+              dockerfile: Docker
+              makefile: Makefile
+              jenkinsfile: Jenkins
+              vagrantfile: Vagrant
+
+              # Ruby ecosystem files
+              rakefile: Ruby
+              gemfile: Ruby
+              podfile: Ruby
+              fastfile: Ruby
+              brewfile: Ruby
+
+              # Add your custom filenames here:
+              # myfile: "My Language"
 
             # Directory Classification
             # Files in these directories count as "production" code

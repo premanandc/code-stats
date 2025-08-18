@@ -164,6 +164,11 @@ public class JGitLogParser implements GitLogParser {
       int totalChanges = Integer.parseInt(matcher.group(2));
       String changeMarkers = matcher.groupCount() > 2 ? matcher.group(3) : "";
 
+      // Skip file renames - they don't represent actual code changes
+      if (isFileRename(filePath)) {
+        continue;
+      }
+
       // Count + and - markers to estimate insertions/deletions
       int insertions = 0;
       int deletions = 0;
@@ -185,6 +190,16 @@ public class JGitLogParser implements GitLogParser {
     }
 
     return List.copyOf(changes);
+  }
+
+  /**
+   * Check if a file path represents a rename operation (e.g., "{old.py => new.py}") 
+   * which should not be counted as code changes.
+   */
+  private boolean isFileRename(String filePath) {
+    // Check for Git rename syntax: {oldfile => newfile} or oldfile => newfile
+    return filePath.contains(" => ") || 
+           (filePath.startsWith("{") && filePath.endsWith("}") && filePath.contains(" => "));
   }
 
   private int[] parseStats(String commitBlock) {

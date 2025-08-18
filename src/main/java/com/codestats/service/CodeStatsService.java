@@ -68,7 +68,8 @@ public class CodeStatsService {
           statisticsAggregator.aggregateStatistics(
               filteredCommits,
               identities,
-              request.config().languages(),
+              request.config().extensions(),
+              request.config().filenames(),
               request.config().productionDirectories(),
               request.config().testDirectories());
 

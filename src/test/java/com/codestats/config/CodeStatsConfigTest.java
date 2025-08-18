@@ -16,9 +16,12 @@ class CodeStatsConfigTest {
   void shouldProvideDefaultConfiguration() {
     CodeStatsConfig config = CodeStatsConfig.getDefault();
 
-    assertThat(config.languages()).containsKeys("java", "js", "py", "go", "rs");
-    assertThat(config.languages().get("java")).isEqualTo("Java");
-    assertThat(config.languages().get("ts")).isEqualTo("TypeScript");
+    assertThat(config.extensions()).containsKeys("java", "js", "py", "go", "rs");
+    assertThat(config.extensions().get("java")).isEqualTo("Java");
+    assertThat(config.extensions().get("ts")).isEqualTo("TypeScript");
+
+    assertThat(config.filenames()).containsKeys("dockerfile", "makefile");
+    assertThat(config.filenames().get("dockerfile")).isEqualTo("Docker");
 
     assertThat(config.productionDirectories()).contains("src", "lib", "app");
     assertThat(config.testDirectories()).contains("test", "tests", "__tests__", "spec");
@@ -32,6 +35,7 @@ class CodeStatsConfigTest {
     CodeStatsConfig base =
         new CodeStatsConfig(
             Map.of("java", "Java", "js", "JavaScript"),
+            Map.of("dockerfile", "Docker"),
             List.of("src"),
             List.of("test"),
             Map.of("alice@company.com", Set.of("alice@personal.com")));
@@ -39,6 +43,7 @@ class CodeStatsConfigTest {
     CodeStatsConfig override =
         new CodeStatsConfig(
             Map.of("py", "Python", "js", "ECMAScript"), // Override js mapping
+            Map.of("makefile", "Makefile"), // Override filename mapping
             List.of("lib", "app"), // Replace production dirs
             List.of(), // Keep base test dirs (empty override)
             Map.of("bob@company.com", Set.of("bob@contractor.com")) // Add new alias
@@ -46,11 +51,16 @@ class CodeStatsConfigTest {
 
     CodeStatsConfig merged = base.mergeWith(override);
 
-    // Languages should be merged with override taking precedence
-    assertThat(merged.languages()).containsKeys("java", "js", "py");
-    assertThat(merged.languages().get("java")).isEqualTo("Java"); // From base
-    assertThat(merged.languages().get("js")).isEqualTo("ECMAScript"); // Overridden
-    assertThat(merged.languages().get("py")).isEqualTo("Python"); // From override
+    // Extensions should be merged with override taking precedence
+    assertThat(merged.extensions()).containsKeys("java", "js", "py");
+    assertThat(merged.extensions().get("java")).isEqualTo("Java"); // From base
+    assertThat(merged.extensions().get("js")).isEqualTo("ECMAScript"); // Overridden
+    assertThat(merged.extensions().get("py")).isEqualTo("Python"); // From override
+
+    // Filenames should be merged with override taking precedence
+    assertThat(merged.filenames()).containsKeys("dockerfile", "makefile");
+    assertThat(merged.filenames().get("dockerfile")).isEqualTo("Docker"); // From base
+    assertThat(merged.filenames().get("makefile")).isEqualTo("Makefile"); // From override
 
     // Production directories replaced (non-empty override)
     assertThat(merged.productionDirectories()).containsExactly("lib", "app");
@@ -67,12 +77,13 @@ class CodeStatsConfigTest {
   @DisplayName("Should handle empty configurations in merge")
   void shouldHandleEmptyConfigurationsMerge() {
     CodeStatsConfig base = CodeStatsConfig.getDefault();
-    CodeStatsConfig empty = new CodeStatsConfig(Map.of(), List.of(), List.of(), Map.of());
+    CodeStatsConfig empty = new CodeStatsConfig(Map.of(), Map.of(), List.of(), List.of(), Map.of());
 
     CodeStatsConfig merged = base.mergeWith(empty);
 
     // Should keep base values when override is empty
-    assertThat(merged.languages()).isEqualTo(base.languages());
+    assertThat(merged.extensions()).isEqualTo(base.extensions());
+    assertThat(merged.filenames()).isEqualTo(base.filenames());
     assertThat(merged.productionDirectories()).isEqualTo(base.productionDirectories());
     assertThat(merged.testDirectories()).isEqualTo(base.testDirectories());
     assertThat(merged.aliases()).isEqualTo(base.aliases());
@@ -84,21 +95,26 @@ class CodeStatsConfigTest {
     CodeStatsConfig config = CodeStatsConfig.getDefault();
 
     // Common web extensions
-    assertThat(config.languages().get("js")).isEqualTo("JavaScript");
-    assertThat(config.languages().get("jsx")).isEqualTo("JavaScript");
-    assertThat(config.languages().get("ts")).isEqualTo("TypeScript");
-    assertThat(config.languages().get("tsx")).isEqualTo("TypeScript");
+    assertThat(config.extensions().get("js")).isEqualTo("JavaScript");
+    assertThat(config.extensions().get("jsx")).isEqualTo("JavaScript");
+    assertThat(config.extensions().get("ts")).isEqualTo("TypeScript");
+    assertThat(config.extensions().get("tsx")).isEqualTo("TypeScript");
 
     // Backend languages
-    assertThat(config.languages().get("java")).isEqualTo("Java");
-    assertThat(config.languages().get("py")).isEqualTo("Python");
-    assertThat(config.languages().get("go")).isEqualTo("Go");
-    assertThat(config.languages().get("rs")).isEqualTo("Rust");
+    assertThat(config.extensions().get("java")).isEqualTo("Java");
+    assertThat(config.extensions().get("py")).isEqualTo("Python");
+    assertThat(config.extensions().get("go")).isEqualTo("Go");
+    assertThat(config.extensions().get("rs")).isEqualTo("Rust");
 
     // Config formats
-    assertThat(config.languages().get("yaml")).isEqualTo("YAML");
-    assertThat(config.languages().get("yml")).isEqualTo("YAML");
-    assertThat(config.languages().get("json")).isEqualTo("JSON");
+    assertThat(config.extensions().get("yaml")).isEqualTo("YAML");
+    assertThat(config.extensions().get("yml")).isEqualTo("YAML");
+    assertThat(config.extensions().get("json")).isEqualTo("JSON");
+
+    // Filename mappings
+    assertThat(config.filenames().get("dockerfile")).isEqualTo("Docker");
+    assertThat(config.filenames().get("makefile")).isEqualTo("Makefile");
+    assertThat(config.filenames().get("jenkinsfile")).isEqualTo("Jenkins");
   }
 
   @Test

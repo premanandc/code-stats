@@ -62,7 +62,7 @@ class StatisticsAggregatorTest {
 
     List<ContributorStats> stats =
         aggregator.aggregateStatistics(
-            commits, identities, languageMapping, productionPatterns, testPatterns);
+            commits, identities, languageMapping, Map.of(), productionPatterns, testPatterns);
 
     assertThat(stats).hasSize(1);
 
@@ -110,7 +110,7 @@ class StatisticsAggregatorTest {
 
     List<ContributorStats> stats =
         aggregator.aggregateStatistics(
-            commits, identities, languageMapping, productionPatterns, testPatterns);
+            commits, identities, languageMapping, Map.of(), productionPatterns, testPatterns);
 
     ContributorStats bobStats = stats.get(0);
 
@@ -139,7 +139,8 @@ class StatisticsAggregatorTest {
             "charlie@company.com", createIdentity("Charlie", "charlie@company.com"));
 
     List<ContributorStats> stats =
-        aggregator.aggregateStatistics(commits, identities, Map.of(), List.of(), List.of());
+        aggregator.aggregateStatistics(
+            commits, identities, Map.of(), Map.of(), List.of(), List.of());
 
     assertThat(stats).hasSize(3);
 
@@ -180,7 +181,8 @@ class StatisticsAggregatorTest {
             "py", "Python");
 
     List<ContributorStats> stats =
-        aggregator.aggregateStatistics(commits, identities, languageMapping, List.of(), List.of());
+        aggregator.aggregateStatistics(
+            commits, identities, languageMapping, Map.of(), List.of(), List.of());
 
     ContributorStats devStats = stats.get(0);
 
@@ -228,10 +230,11 @@ class StatisticsAggregatorTest {
             "js", "JavaScript",
             "py", "Python");
 
-    assertThat(aggregator.getLanguageForFile("Service.java", mapping)).isEqualTo("Java");
-    assertThat(aggregator.getLanguageForFile("app.js", mapping)).isEqualTo("JavaScript");
-    assertThat(aggregator.getLanguageForFile("script.unknown", mapping)).isEqualTo("Unknown");
-    assertThat(aggregator.getLanguageForFile("README", mapping)).isEqualTo("Unknown");
+    assertThat(aggregator.getLanguageForFile("Service.java", mapping, Map.of())).isEqualTo("Java");
+    assertThat(aggregator.getLanguageForFile("app.js", mapping, Map.of())).isEqualTo("JavaScript");
+    assertThat(aggregator.getLanguageForFile("script.unknown", mapping, Map.of()))
+        .isEqualTo("Unknown");
+    assertThat(aggregator.getLanguageForFile("README", mapping, Map.of())).isEqualTo("Unknown");
   }
 
   @Test
@@ -241,7 +244,8 @@ class StatisticsAggregatorTest {
     Map<String, ContributorIdentity> identities = Map.of();
 
     List<ContributorStats> stats =
-        aggregator.aggregateStatistics(commits, identities, Map.of(), List.of(), List.of());
+        aggregator.aggregateStatistics(
+            commits, identities, Map.of(), Map.of(), List.of(), List.of());
 
     assertThat(stats).isEmpty();
   }
