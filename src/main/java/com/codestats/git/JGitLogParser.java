@@ -193,13 +193,13 @@ public class JGitLogParser implements GitLogParser {
   }
 
   /**
-   * Check if a file path represents a rename operation (e.g., "{old.py => new.py}") 
-   * which should not be counted as code changes.
+   * Check if a file path represents a rename operation (e.g., "{old.py => new.py}") which should
+   * not be counted as code changes.
    */
   private boolean isFileRename(String filePath) {
     // Check for Git rename syntax: {oldfile => newfile} or oldfile => newfile
-    return filePath.contains(" => ") || 
-           (filePath.startsWith("{") && filePath.endsWith("}") && filePath.contains(" => "));
+    return filePath.contains(" => ")
+        || (filePath.startsWith("{") && filePath.endsWith("}") && filePath.contains(" => "));
   }
 
   private int[] parseStats(String commitBlock) {

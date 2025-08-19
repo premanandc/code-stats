@@ -273,17 +273,20 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.13</version>
+                <configuration>
+                    <excludes>
+                        <!-- Exclude records and simple data classes -->
+                        <exclude>**/model/FileChange.class</exclude>
+                        <exclude>**/model/LanguageStats.class</exclude>
+                        <exclude>**/model/ContributorIdentity.class</exclude>
+                        <!-- Exclude main class from coverage requirements -->
+                        <exclude>**/Main.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
                         </goals>
                     </execution>
                     <execution>
@@ -306,17 +309,14 @@
                             </rules>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>test</phase>
+                    </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <!-- Exclude records and simple data classes -->
-                        <exclude>**/model/FileChange.class</exclude>
-                        <exclude>**/model/LanguageStats.class</exclude>
-                        <exclude>**/model/ContributorIdentity.class</exclude>
-                        <!-- Exclude main class from coverage requirements -->
-                        <exclude>**/Main.class</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
             <!-- PIT Mutation Testing plugin -->
@@ -324,14 +324,6 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <version>1.17.2</version>
-                <dependencies>
-                    <!-- JUnit 5 plugin for PIT -->
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.1</version>
-                    </dependency>
-                </dependencies>
                 <configuration>
                     <!-- Target classes to mutate -->
                     <targetClasses>
@@ -367,6 +359,14 @@
                         <mutator>STRONGER</mutator>
                     </mutators>
                 </configuration>
+                <dependencies>
+                    <!-- JUnit 5 plugin for PIT -->
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!-- OWASP Dependency-Check plugin for SCA (Software Composition Analysis) -->

@@ -2,16 +2,17 @@ package com.codestats.output;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.codestats.model.ContributorIdentity;
-import com.codestats.model.ContributorStats;
-import com.codestats.model.LanguageStats;
-import com.codestats.service.CodeStatsService;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.codestats.model.ContributorStats;
+import com.codestats.model.LanguageStats;
+import com.codestats.service.CodeStatsService;
 
 class TextOutputFormatterTest {
 
@@ -204,11 +205,11 @@ class TextOutputFormatterTest {
   void shouldFormatNetChangeCorrectly() {
     // Given - contributor with net positive changes
     var contributor1 = createTestContributor("Adder", "add@example.com", 1, 100, 20, 1);
-    // Given - contributor with net negative changes  
+    // Given - contributor with net negative changes
     var contributor2 = createTestContributor("Deleter", "del@example.com", 1, 10, 50, 1);
     // Given - contributor with neutral changes
     var contributor3 = createTestContributor("Neutral", "neu@example.com", 1, 30, 30, 1);
-    
+
     var result1 = createSuccessResult(List.of(contributor1));
     var result2 = createSuccessResult(List.of(contributor2));
     var result3 = createSuccessResult(List.of(contributor3));
@@ -287,7 +288,8 @@ class TextOutputFormatterTest {
     return createTestContributor("John Doe", "john@example.com", 5, 100, 20, 3);
   }
 
-  private ContributorStats createTestContributor(String name, String email, int commits, int insertions, int deletions, int files) {
+  private ContributorStats createTestContributor(
+      String name, String email, int commits, int insertions, int deletions, int files) {
     return new ContributorStats(
         name,
         email,
@@ -298,15 +300,14 @@ class TextOutputFormatterTest {
         deletions,
         Map.of(),
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithLanguages() {
-    var languageStats = Map.of(
-        "Java", new LanguageStats("Java", 80, 50, 30, 4),
-        "Python", new LanguageStats("Python", 40, 25, 15, 4)
-    );
+    var languageStats =
+        Map.of(
+            "Java", new LanguageStats("Java", 80, 50, 30, 4),
+            "Python", new LanguageStats("Python", 40, 25, 15, 4));
 
     return new ContributorStats(
         "Developer",
@@ -318,17 +319,16 @@ class TextOutputFormatterTest {
         45,
         languageStats,
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithManyLanguages() {
-    var languageStats = Map.of(
-        "Java", new LanguageStats("Java", 100, 60, 40, 4),
-        "Python", new LanguageStats("Python", 80, 50, 30, 4),
-        "JavaScript", new LanguageStats("JavaScript", 60, 40, 20, 4),
-        "Go", new LanguageStats("Go", 40, 25, 15, 3)
-    );
+    var languageStats =
+        Map.of(
+            "Java", new LanguageStats("Java", 100, 60, 40, 4),
+            "Python", new LanguageStats("Python", 80, 50, 30, 4),
+            "JavaScript", new LanguageStats("JavaScript", 60, 40, 20, 4),
+            "Go", new LanguageStats("Go", 40, 25, 15, 3));
 
     return new ContributorStats(
         "Polyglot",
@@ -340,8 +340,7 @@ class TextOutputFormatterTest {
         105,
         languageStats,
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithCodeDistribution() {
@@ -355,8 +354,7 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 60),
-        Map.of("Java", 20)
-    );
+        Map.of("Java", 20));
   }
 
   private ContributorStats createContributorWithOnlyProduction() {
@@ -370,8 +368,7 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 50),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithOnlyTest() {
@@ -385,8 +382,7 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of(),
-        Map.of("Java", 30)
-    );
+        Map.of("Java", 30));
   }
 
   private ContributorStats createContributorWithAliases() {
@@ -400,11 +396,11 @@ class TextOutputFormatterTest {
         20,
         Map.of(),
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
-  private CodeStatsService.CodeStatsResult createSuccessResult(List<ContributorStats> contributors) {
+  private CodeStatsService.CodeStatsResult createSuccessResult(
+      List<ContributorStats> contributors) {
     return new CodeStatsService.CodeStatsResult(
         contributors,
         contributors.stream().mapToInt(ContributorStats::commitCount).sum(),
@@ -412,19 +408,11 @@ class TextOutputFormatterTest {
         LocalDateTime.of(2024, 1, 1, 0, 0),
         LocalDateTime.of(2024, 12, 31, 23, 59),
         true,
-        null
-    );
+        null);
   }
-  
+
   private CodeStatsService.CodeStatsResult createErrorResult(String errorMessage) {
     return new CodeStatsService.CodeStatsResult(
-        List.of(),
-        0,
-        new File("/test/repo"),
-        null,
-        null,
-        false,
-        errorMessage
-    );
+        List.of(), 0, new File("/test/repo"), null, null, false, errorMessage);
   }
 }

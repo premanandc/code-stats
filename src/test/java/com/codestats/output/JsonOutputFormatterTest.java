@@ -2,18 +2,19 @@ package com.codestats.output;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.codestats.model.ContributorIdentity;
+import java.io.File;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.codestats.model.ContributorStats;
 import com.codestats.model.LanguageStats;
 import com.codestats.service.CodeStatsService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class JsonOutputFormatterTest {
 
@@ -37,13 +38,13 @@ class JsonOutputFormatterTest {
 
     // Then
     assertThat(json).isNotEmpty();
-    
+
     // Verify it's valid JSON
     JsonNode jsonNode = objectMapper.readTree(json);
     assertThat(jsonNode.get("success").asBoolean()).isTrue();
     assertThat(jsonNode.get("totalCommits").asInt()).isEqualTo(5);
     assertThat(jsonNode.get("contributorStats")).hasSize(1);
-    
+
     // Verify contributor data
     JsonNode contributorNode = jsonNode.get("contributorStats").get(0);
     assertThat(contributorNode.get("name").asText()).isEqualTo("John Doe");
@@ -64,7 +65,7 @@ class JsonOutputFormatterTest {
 
     // Then
     assertThat(json).isNotEmpty();
-    
+
     // Verify it's valid JSON
     JsonNode jsonNode = objectMapper.readTree(json);
     assertThat(jsonNode.get("success").asBoolean()).isFalse();
@@ -83,7 +84,7 @@ class JsonOutputFormatterTest {
 
     // Then
     assertThat(json).isNotEmpty();
-    
+
     // Verify it's valid JSON
     JsonNode jsonNode = objectMapper.readTree(json);
     assertThat(jsonNode.get("success").asBoolean()).isTrue();
@@ -103,17 +104,17 @@ class JsonOutputFormatterTest {
 
     // Then
     assertThat(json).isNotEmpty();
-    
+
     // Verify it's valid JSON
     JsonNode jsonNode = objectMapper.readTree(json);
     assertThat(jsonNode.get("success").asBoolean()).isTrue();
     assertThat(jsonNode.get("contributorStats")).hasSize(2);
-    
+
     // Verify first contributor
     JsonNode first = jsonNode.get("contributorStats").get(0);
     assertThat(first.get("name").asText()).isEqualTo("Alice");
     assertThat(first.get("commitCount").asInt()).isEqualTo(10);
-    
+
     // Verify second contributor
     JsonNode second = jsonNode.get("contributorStats").get(1);
     assertThat(second.get("name").asText()).isEqualTo("Bob");
@@ -133,7 +134,7 @@ class JsonOutputFormatterTest {
     JsonNode jsonNode = objectMapper.readTree(json);
     JsonNode contributorNode = jsonNode.get("contributorStats").get(0);
     JsonNode languageStats = contributorNode.get("languageStats");
-    
+
     assertThat(languageStats.has("Java")).isTrue();
     assertThat(languageStats.has("Python")).isTrue();
     assertThat(languageStats.get("Java").get("linesChanged").asInt()).isEqualTo(80);
@@ -152,10 +153,10 @@ class JsonOutputFormatterTest {
     // Then
     JsonNode jsonNode = objectMapper.readTree(json);
     JsonNode contributorNode = jsonNode.get("contributorStats").get(0);
-    
+
     JsonNode prodLines = contributorNode.get("productionLines");
     JsonNode testLines = contributorNode.get("testLines");
-    
+
     assertThat(prodLines.get("Java").asInt()).isEqualTo(60);
     assertThat(testLines.get("Java").asInt()).isEqualTo(20);
   }
@@ -195,19 +196,19 @@ class JsonOutputFormatterTest {
   @Test
   void shouldHandleMultipleEmailAliases() throws Exception {
     // Given
-    var contributor = new ContributorStats(
-        "John Doe",
-        "john@example.com",
-        List.of("john@example.com", "john.doe@company.com", "jdoe@old-company.com"),
-        5,
-        3,
-        100,
-        20,
-        Map.of(),
-        Map.of(),
-        Map.of()
-    );
-    
+    var contributor =
+        new ContributorStats(
+            "John Doe",
+            "john@example.com",
+            List.of("john@example.com", "john.doe@company.com", "jdoe@old-company.com"),
+            5,
+            3,
+            100,
+            20,
+            Map.of(),
+            Map.of(),
+            Map.of());
+
     var result = createSuccessResult(List.of(contributor));
 
     // When
@@ -217,7 +218,7 @@ class JsonOutputFormatterTest {
     JsonNode jsonNode = objectMapper.readTree(json);
     JsonNode contributorNode = jsonNode.get("contributorStats").get(0);
     JsonNode allEmails = contributorNode.get("allEmails");
-    
+
     assertThat(allEmails).hasSize(3);
     assertThat(allEmails.toString()).contains("john@example.com");
     assertThat(allEmails.toString()).contains("john.doe@company.com");
@@ -228,7 +229,8 @@ class JsonOutputFormatterTest {
     return createTestContributor("John Doe", "john@example.com", 5, 100, 20, 3);
   }
 
-  private ContributorStats createTestContributor(String name, String email, int commits, int insertions, int deletions, int files) {
+  private ContributorStats createTestContributor(
+      String name, String email, int commits, int insertions, int deletions, int files) {
     return new ContributorStats(
         name,
         email,
@@ -239,15 +241,14 @@ class JsonOutputFormatterTest {
         deletions,
         Map.of(),
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithLanguages() {
-    var languageStats = Map.of(
-        "Java", new LanguageStats("Java", 80, 50, 30, 4),
-        "Python", new LanguageStats("Python", 40, 25, 15, 4)
-    );
+    var languageStats =
+        Map.of(
+            "Java", new LanguageStats("Java", 80, 50, 30, 4),
+            "Python", new LanguageStats("Python", 40, 25, 15, 4));
 
     return new ContributorStats(
         "Developer",
@@ -259,8 +260,7 @@ class JsonOutputFormatterTest {
         45,
         languageStats,
         Map.of(),
-        Map.of()
-    );
+        Map.of());
   }
 
   private ContributorStats createContributorWithCodeDistribution() {
@@ -274,31 +274,25 @@ class JsonOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 60),
-        Map.of("Java", 20)
-    );
+        Map.of("Java", 20));
   }
 
-  private CodeStatsService.CodeStatsResult createSuccessResult(List<ContributorStats> contributors) {
+  private CodeStatsService.CodeStatsResult createSuccessResult(
+      List<ContributorStats> contributors) {
     return new CodeStatsService.CodeStatsResult(
         contributors,
-        contributors.size() > 0 ? contributors.stream().mapToInt(ContributorStats::commitCount).sum() : 0,
+        contributors.size() > 0
+            ? contributors.stream().mapToInt(ContributorStats::commitCount).sum()
+            : 0,
         new File("/test/repo"),
         LocalDateTime.of(2024, 1, 1, 0, 0),
         LocalDateTime.of(2024, 12, 31, 23, 59),
         true,
-        null
-    );
+        null);
   }
-  
+
   private CodeStatsService.CodeStatsResult createErrorResult(String errorMessage) {
     return new CodeStatsService.CodeStatsResult(
-        List.of(),
-        0,
-        new File("/test/repo"),
-        null,
-        null,
-        false,
-        errorMessage
-    );
+        List.of(), 0, new File("/test/repo"), null, null, false, errorMessage);
   }
 }

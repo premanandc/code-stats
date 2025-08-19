@@ -218,7 +218,8 @@ class GitLogParserTest {
   @Test
   @DisplayName("Should exclude file renames from changes")
   void shouldExcludeFileRenames() {
-    String gitLogOutput = """
+    String gitLogOutput =
+        """
         commit abc123
         Author: Test User <test@example.com>
         Date: 2024-01-15 10:30:45 +0000
@@ -236,14 +237,12 @@ class GitLogParserTest {
 
     assertThat(commits).hasSize(1);
     GitCommit commit = commits.get(0);
-    
+
     // Should only include actual file changes, not renames
     assertThat(commit.fileChanges()).hasSize(2);
-    
-    List<String> filePaths = commit.fileChanges().stream()
-        .map(FileChange::path)
-        .toList();
-    
+
+    List<String> filePaths = commit.fileChanges().stream().map(FileChange::path).toList();
+
     assertThat(filePaths).containsOnly("src/Main.java", "test/Test.java");
     assertThat(filePaths).doesNotContain("{old_file.py => new_file.py}");
     assertThat(filePaths).doesNotContain("app/{config.js => settings.js}");
