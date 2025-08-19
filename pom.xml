@@ -268,6 +268,107 @@
                 </executions>
             </plugin>
 
+            <!-- JaCoCo Code Coverage plugin -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <!-- Exclude records and simple data classes -->
+                        <exclude>**/model/FileChange.class</exclude>
+                        <exclude>**/model/LanguageStats.class</exclude>
+                        <exclude>**/model/ContributorIdentity.class</exclude>
+                        <!-- Exclude main class from coverage requirements -->
+                        <exclude>**/Main.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- PIT Mutation Testing plugin -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.17.2</version>
+                <dependencies>
+                    <!-- JUnit 5 plugin for PIT -->
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <!-- Target classes to mutate -->
+                    <targetClasses>
+                        <param>com.codestats.*</param>
+                    </targetClasses>
+                    <!-- Test classes to run -->
+                    <targetTests>
+                        <param>com.codestats.*Test</param>
+                    </targetTests>
+                    <!-- Exclude classes that don't need mutation testing -->
+                    <excludedClasses>
+                        <param>com.codestats.Main</param>
+                        <param>com.codestats.model.*</param>
+                        <param>com.codestats.output.*</param>
+                    </excludedClasses>
+                    <!-- Output formats -->
+                    <outputFormats>
+                        <format>HTML</format>
+                        <format>XML</format>
+                    </outputFormats>
+                    <!-- Fail build if mutation score is too low -->
+                    <mutationThreshold>75</mutationThreshold>
+                    <!-- Coverage threshold (must be met before mutation testing) -->
+                    <coverageThreshold>70</coverageThreshold>
+                    <!-- Number of threads for parallel execution -->
+                    <threads>2</threads>
+                    <!-- Timeout factor for slow tests -->
+                    <timeoutFactor>1.25</timeoutFactor>
+                    <!-- Enable verbose output -->
+                    <verbose>false</verbose>
+                    <!-- Mutators to use -->
+                    <mutators>
+                        <mutator>STRONGER</mutator>
+                    </mutators>
+                </configuration>
+            </plugin>
+
             <!-- OWASP Dependency-Check plugin for SCA (Software Composition Analysis) -->
             <plugin>
                 <groupId>org.owasp</groupId>
