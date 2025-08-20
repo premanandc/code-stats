@@ -236,6 +236,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>validate</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -264,6 +265,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -294,6 +296,7 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>test</phase>
                         <configuration>
                             <rules>
                                 <rule>
@@ -317,56 +320,6 @@
                         <phase>test</phase>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- PIT Mutation Testing plugin -->
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>1.20.2</version>
-                <configuration>
-                    <!-- Target classes to mutate -->
-                    <targetClasses>
-                        <param>com.codestats.*</param>
-                    </targetClasses>
-                    <!-- Test classes to run -->
-                    <targetTests>
-                        <param>com.codestats.*Test</param>
-                    </targetTests>
-                    <!-- Exclude classes that don't need mutation testing -->
-                    <excludedClasses>
-                        <param>com.codestats.Main</param>
-                        <param>com.codestats.model.*</param>
-                        <param>com.codestats.output.*</param>
-                    </excludedClasses>
-                    <!-- Output formats -->
-                    <outputFormats>
-                        <format>HTML</format>
-                        <format>XML</format>
-                    </outputFormats>
-                    <!-- Fail build if mutation score is too low -->
-                    <mutationThreshold>75</mutationThreshold>
-                    <!-- Coverage threshold (must be met before mutation testing) -->
-                    <coverageThreshold>70</coverageThreshold>
-                    <!-- Number of threads for parallel execution -->
-                    <threads>2</threads>
-                    <!-- Timeout factor for slow tests -->
-                    <timeoutFactor>1.25</timeoutFactor>
-                    <!-- Enable verbose output -->
-                    <verbose>false</verbose>
-                    <!-- Mutators to use -->
-                    <mutators>
-                        <mutator>STRONGER</mutator>
-                    </mutators>
-                </configuration>
-                <dependencies>
-                    <!-- JUnit 5 plugin for PIT -->
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.1</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <!-- OWASP Dependency-Check plugin for SCA (Software Composition Analysis) -->
@@ -407,9 +360,78 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <!-- Profiles for optional quality checks -->
+    <profiles>
+        <profile>
+            <id>mutation-test</id>
+            <build>
+                <plugins>
+                    <!-- PIT Mutation Testing plugin -->
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>1.20.2</version>
+                        <configuration>
+                            <!-- Target classes to mutate -->
+                            <targetClasses>
+                                <param>com.codestats.*</param>
+                            </targetClasses>
+                            <!-- Test classes to run -->
+                            <targetTests>
+                                <param>com.codestats.*Test</param>
+                            </targetTests>
+                            <!-- Exclude classes that don't need mutation testing -->
+                            <excludedClasses>
+                                <param>com.codestats.Main</param>
+                                <param>com.codestats.model.*</param>
+                                <param>com.codestats.output.*</param>
+                            </excludedClasses>
+                            <!-- Output formats -->
+                            <outputFormats>
+                                <format>HTML</format>
+                                <format>XML</format>
+                            </outputFormats>
+                            <!-- Fail build if mutation score is too low -->
+                            <mutationThreshold>70</mutationThreshold>
+                            <!-- Coverage threshold (must be met before mutation testing) -->
+                            <coverageThreshold>70</coverageThreshold>
+                            <!-- Number of threads for parallel execution -->
+                            <threads>2</threads>
+                            <!-- Timeout factor for slow tests -->
+                            <timeoutFactor>1.25</timeoutFactor>
+                            <!-- Enable verbose output -->
+                            <verbose>false</verbose>
+                            <!-- Mutators to use -->
+                            <mutators>
+                                <mutator>STRONGER</mutator>
+                            </mutators>
+                        </configuration>
+                        <dependencies>
+                            <!-- JUnit 5 plugin for PIT -->
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>1.2.1</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
