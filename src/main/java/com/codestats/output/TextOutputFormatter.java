@@ -116,19 +116,30 @@ public class TextOutputFormatter implements OutputFormatter {
       sb.append("\n");
     }
 
-    // Production vs Test lines
-    if (!stats.productionLines().isEmpty() || !stats.testLines().isEmpty()) {
+    // Production vs Test vs Other lines
+    if (!stats.productionLines().isEmpty()
+        || !stats.testLines().isEmpty()
+        || !stats.otherLines().isEmpty()) {
       int totalProd = stats.productionLines().values().stream().mapToInt(Integer::intValue).sum();
       int totalTest = stats.testLines().values().stream().mapToInt(Integer::intValue).sum();
+      int totalOther = stats.otherLines().values().stream().mapToInt(Integer::intValue).sum();
 
-      if (totalProd > 0 || totalTest > 0) {
+      if (totalProd > 0 || totalTest > 0 || totalOther > 0) {
         sb.append("   ").append(color(CYAN, "Code distribution: "));
+        boolean needsComma = false;
+
         if (totalProd > 0) {
           sb.append(color(GREEN, "Production: " + totalProd));
+          needsComma = true;
         }
         if (totalTest > 0) {
-          if (totalProd > 0) sb.append(", ");
+          if (needsComma) sb.append(", ");
           sb.append(color(YELLOW, "Test: " + totalTest));
+          needsComma = true;
+        }
+        if (totalOther > 0) {
+          if (needsComma) sb.append(", ");
+          sb.append(color(BLUE, "Other: " + totalOther));
         }
         sb.append("\n");
       }

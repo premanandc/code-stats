@@ -114,12 +114,12 @@ class StatisticsAggregatorTest {
 
     ContributorStats bobStats = stats.get(0);
 
-    // Production lines: Service.java (25 total) + README.md (5 total) = 30
-    assertThat(bobStats.productionLines()).containsEntry("Java", 25);
+    // Production lines: Service.java (20-5=15 net) + README.md (5-0=5 net) = 20
+    assertThat(bobStats.productionLines()).containsEntry("Java", 15);
     assertThat(bobStats.productionLines()).containsEntry("Markdown", 5);
 
-    // Test lines: ServiceTest.java (12 total) = 12
-    assertThat(bobStats.testLines()).containsEntry("Java", 12);
+    // Test lines: ServiceTest.java (10-2=8 net) = 8
+    assertThat(bobStats.testLines()).containsEntry("Java", 8);
   }
 
   @Test
@@ -218,7 +218,7 @@ class StatisticsAggregatorTest {
                 "__tests__/component.spec.js", productionPatterns, testPatterns))
         .isFalse();
     assertThat(aggregator.isProductionCode("random/file.txt", productionPatterns, testPatterns))
-        .isTrue(); // Default to production
+        .isFalse(); // Not matching any pattern defaults to false (other)
   }
 
   @Test

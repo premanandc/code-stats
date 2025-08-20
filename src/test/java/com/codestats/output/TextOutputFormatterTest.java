@@ -304,6 +304,7 @@ class TextOutputFormatterTest {
         deletions,
         Map.of(),
         Map.of(),
+        Map.of(),
         Map.of());
   }
 
@@ -322,6 +323,7 @@ class TextOutputFormatterTest {
         75,
         45,
         languageStats,
+        Map.of(),
         Map.of(),
         Map.of());
   }
@@ -344,6 +346,7 @@ class TextOutputFormatterTest {
         105,
         languageStats,
         Map.of(),
+        Map.of(),
         Map.of());
   }
 
@@ -358,7 +361,8 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 60),
-        Map.of("Java", 20));
+        Map.of("Java", 20),
+        Map.of());
   }
 
   private ContributorStats createContributorWithOnlyProduction() {
@@ -372,6 +376,7 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 50),
+        Map.of(),
         Map.of());
   }
 
@@ -386,7 +391,8 @@ class TextOutputFormatterTest {
         0,
         Map.of(),
         Map.of(),
-        Map.of("Java", 30));
+        Map.of("Java", 30),
+        Map.of());
   }
 
   private ContributorStats createContributorWithAliases() {
@@ -398,6 +404,7 @@ class TextOutputFormatterTest {
         3,
         100,
         20,
+        Map.of(),
         Map.of(),
         Map.of(),
         Map.of());
@@ -559,6 +566,7 @@ class TextOutputFormatterTest {
             3,
             50,
             10,
+            Map.of(),
             Map.of(),
             Map.of(),
             Map.of());

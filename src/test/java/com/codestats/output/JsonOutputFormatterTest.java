@@ -207,6 +207,7 @@ class JsonOutputFormatterTest {
             20,
             Map.of(),
             Map.of(),
+            Map.of(),
             Map.of());
 
     var result = createSuccessResult(List.of(contributor));
@@ -241,6 +242,7 @@ class JsonOutputFormatterTest {
         deletions,
         Map.of(),
         Map.of(),
+        Map.of(),
         Map.of());
   }
 
@@ -260,6 +262,7 @@ class JsonOutputFormatterTest {
         45,
         languageStats,
         Map.of(),
+        Map.of(),
         Map.of());
   }
 
@@ -274,14 +277,15 @@ class JsonOutputFormatterTest {
         0,
         Map.of(),
         Map.of("Java", 60),
-        Map.of("Java", 20));
+        Map.of("Java", 20),
+        Map.of("Other", 10));
   }
 
   private CodeStatsService.CodeStatsResult createSuccessResult(
       List<ContributorStats> contributors) {
     return new CodeStatsService.CodeStatsResult(
         contributors,
-        contributors.size() > 0
+        !contributors.isEmpty()
             ? contributors.stream().mapToInt(ContributorStats::commitCount).sum()
             : 0,
         new File("/test/repo"),

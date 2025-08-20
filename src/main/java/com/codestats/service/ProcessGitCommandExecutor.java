@@ -26,7 +26,8 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
     }
 
     try {
-      List<String> command = buildGitLogCommandList(since, until, maxCommits, includeUsers, excludeUsers);
+      List<String> command =
+          buildGitLogCommandList(since, until, maxCommits, includeUsers, excludeUsers);
 
       ProcessBuilder processBuilder = new ProcessBuilder(command);
       processBuilder.directory(repositoryPath);

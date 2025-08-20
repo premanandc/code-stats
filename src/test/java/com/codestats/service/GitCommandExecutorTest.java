@@ -82,7 +82,7 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(null, null, null, null, null);
 
     // Then
-    assertThat(command).isEqualTo("git log --stat --pretty=fuller");
+    assertThat(command).isEqualTo("git log --numstat --pretty=fuller");
   }
 
   @Test
@@ -94,7 +94,8 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(since, null, null, null, null);
 
     // Then
-    assertThat(command).isEqualTo("git log --stat --pretty=fuller --since=\"2024-01-01T00:00:00\"");
+    assertThat(command)
+        .isEqualTo("git log --numstat --pretty=fuller --since=\"2024-01-01T00:00:00\"");
   }
 
   @Test
@@ -106,7 +107,8 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(null, until, null, null, null);
 
     // Then
-    assertThat(command).isEqualTo("git log --stat --pretty=fuller --until=\"2024-12-31T23:59:59\"");
+    assertThat(command)
+        .isEqualTo("git log --numstat --pretty=fuller --until=\"2024-12-31T23:59:59\"");
   }
 
   @Test
@@ -121,7 +123,7 @@ class GitCommandExecutorTest {
     // Then
     assertThat(command)
         .isEqualTo(
-            "git log --stat --pretty=fuller --since=\"2024-01-01T00:00:00\" --until=\"2024-12-31T23:59:59\"");
+            "git log --numstat --pretty=fuller --since=\"2024-01-01T00:00:00\" --until=\"2024-12-31T23:59:59\"");
   }
 
   @Test
@@ -133,7 +135,8 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
-    assertThat(command).isEqualTo("git log --stat --pretty=fuller --author=\"john@example.com\"");
+    assertThat(command)
+        .isEqualTo("git log --numstat --pretty=fuller --author=\"john@example.com\"");
   }
 
   @Test
@@ -145,7 +148,7 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
-    assertThat(command).contains("git log --stat --pretty=fuller");
+    assertThat(command).contains("git log --numstat --pretty=fuller");
     assertThat(command).contains("--author=\"john@example.com\"");
     assertThat(command).contains("--author=\"jane@example.com\"");
   }
@@ -159,7 +162,7 @@ class GitCommandExecutorTest {
     String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
-    assertThat(command).isEqualTo("git log --stat --pretty=fuller");
+    assertThat(command).isEqualTo("git log --numstat --pretty=fuller");
   }
 
   @Test
@@ -175,7 +178,7 @@ class GitCommandExecutorTest {
         gitCommandExecutor.buildGitLogCommand(since, until, null, includeUsers, excludeUsers);
 
     // Then
-    assertThat(command).contains("git log --stat --pretty=fuller");
+    assertThat(command).contains("git log --numstat --pretty=fuller");
     assertThat(command).contains("--since=\"2024-01-01T00:00:00\"");
     assertThat(command).contains("--until=\"2024-12-31T23:59:59\"");
     assertThat(command).contains("--author=\"john@example.com\"");

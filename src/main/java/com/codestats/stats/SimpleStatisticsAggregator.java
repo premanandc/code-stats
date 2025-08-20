@@ -100,21 +100,23 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
     Map<String, LanguageStats> languageStats =
         aggregateLanguageStats(commits, extensionMapping, filenameMapping);
 
-    // Aggregate production vs test lines
+    // Aggregate production vs test vs other lines
     Map<String, Integer> productionLines = new HashMap<>();
     Map<String, Integer> testLines = new HashMap<>();
+    Map<String, Integer> otherLines = new HashMap<>();
 
     for (GitCommit commit : commits) {
       for (FileChange fileChange : commit.fileChanges()) {
         String language = getLanguageForFile(fileChange.path(), extensionMapping, filenameMapping);
         int netLines = fileChange.netLines();
 
-        if (isProductionCode(fileChange.path(), productionPatterns, testPatterns)) {
-          productionLines.merge(language, netLines, Integer::sum);
-        } else if (isTestCode(fileChange.path(), productionPatterns, testPatterns)) {
+        if (isTestCode(fileChange.path(), productionPatterns, testPatterns)) {
           testLines.merge(language, netLines, Integer::sum);
+        } else if (isProductionCode(fileChange.path(), productionPatterns, testPatterns)) {
+          productionLines.merge(language, netLines, Integer::sum);
+        } else {
+          otherLines.merge(language, netLines, Integer::sum);
         }
-        // Files that are neither production nor test are not counted in code distribution
       }
     }
 
@@ -129,6 +131,7 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
         .languageStats(Map.copyOf(languageStats))
         .productionLines(Map.copyOf(productionLines))
         .testLines(Map.copyOf(testLines))
+        .otherLines(Map.copyOf(otherLines))
         .build();
   }
 

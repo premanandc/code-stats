@@ -27,7 +27,7 @@ public class JGitLogParser implements GitLogParser {
           "^\\s*(\\d+) files? changed(?:, (\\d+) insertions?\\(\\+\\))?(?:, (\\d+) deletions?\\(\\-\\))?",
           Pattern.MULTILINE);
   private static final Pattern FILE_CHANGE_PATTERN =
-      Pattern.compile("^(\\d+)\\s+(\\d+)\\s+(.+)$", Pattern.MULTILINE);
+      Pattern.compile("^(\\d+|-)\\s+(\\d+|-)\\s+(.+)$", Pattern.MULTILINE);
 
   @Override
   public List<GitCommit> parseCommits(String gitLogOutput) {
@@ -162,17 +162,19 @@ public class JGitLogParser implements GitLogParser {
     while (matcher.find()) {
       String insertionsStr = matcher.group(1);
       String deletionsStr = matcher.group(2);
-      String filePath = matcher.group(3).trim();
+      String filePathOriginal = matcher.group(3);
+      String filePath = filePathOriginal.trim();
 
       // Skip file renames - they don't represent actual code changes
-      if (isFileRename(filePath)) {
+      // Check original path before trimming to preserve rename detection
+      if (isFileRename(filePathOriginal) || isFileRename(filePath)) {
         continue;
       }
 
       // Parse insertions and deletions from numstat format
       int insertions = 0;
       int deletions = 0;
-      
+
       // Handle binary files (git outputs "-" for binary files)
       if (!insertionsStr.equals("-")) {
         insertions = Integer.parseInt(insertionsStr);
@@ -192,21 +194,54 @@ public class JGitLogParser implements GitLogParser {
    * not be counted as code changes.
    */
   private boolean isFileRename(String filePath) {
+    // Special edge case: "=>" after trimming (from " => " in input) should be treated as rename
+    String trimmed = filePath.trim();
+    if (trimmed.equals("=>")) {
+      return true;
+    }
+
     // Check for Git rename syntax: {oldfile => newfile} or oldfile => newfile
-    return filePath.contains(" => ")
-        || (filePath.startsWith("{") && filePath.endsWith("}") && filePath.contains(" => "));
+    if (filePath.contains(" => ")) {
+      // Check for curly brace syntax first
+      if (filePath.startsWith("{") && filePath.endsWith("}")) {
+        return true;
+      }
+      // For non-curly syntax, check if it's a simple A => B pattern
+      // Valid renames should have the format: "oldname => newname"
+      // False positive check: if there are additional characters around the =>, it's probably not a
+      // rename
+      String[] parts = filePath.split(" => ", 2);
+      if (parts.length == 2) {
+        String before = parts[0].trim();
+        String after = parts[1].trim();
+        // Both parts should be non-empty and look like filenames (no spaces within each part)
+        // This correctly rejects "file with => in name.txt" as NOT a rename
+        return !before.isEmpty()
+            && !after.isEmpty()
+            && !before.contains(" ")
+            && !after.contains(" ");
+      }
+    }
+    return false;
   }
 
   private int[] parseStats(String commitBlock) {
     // With --numstat, we need to calculate totals from individual file stats
     int totalInsertions = 0;
     int totalDeletions = 0;
-    
+
     Matcher matcher = FILE_CHANGE_PATTERN.matcher(commitBlock);
     while (matcher.find()) {
       String insertionsStr = matcher.group(1);
       String deletionsStr = matcher.group(2);
-      
+      String filePathOriginal = matcher.group(3);
+      String filePath = filePathOriginal.trim();
+
+      // Skip file renames - they shouldn't count toward stats either
+      if (isFileRename(filePathOriginal) || isFileRename(filePath)) {
+        continue;
+      }
+
       // Handle binary files (git outputs "-" for binary files)
       if (!insertionsStr.equals("-")) {
         totalInsertions += Integer.parseInt(insertionsStr);
@@ -215,7 +250,7 @@ public class JGitLogParser implements GitLogParser {
         totalDeletions += Integer.parseInt(deletionsStr);
       }
     }
-    
+
     return new int[] {totalInsertions, totalDeletions};
   }
 }

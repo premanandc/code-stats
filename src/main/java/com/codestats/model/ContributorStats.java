@@ -17,7 +17,8 @@ public record ContributorStats(
     int deletions,
     Map<String, LanguageStats> languageStats,
     Map<String, Integer> productionLines,
-    Map<String, Integer> testLines) {
+    Map<String, Integer> testLines,
+    Map<String, Integer> otherLines) {
 
   /** Calculate total lines changed (insertions + deletions) */
   public int totalLinesChanged() {
@@ -50,6 +51,7 @@ public record ContributorStats(
     private Map<String, LanguageStats> languageStats = Map.of();
     private Map<String, Integer> productionLines = Map.of();
     private Map<String, Integer> testLines = Map.of();
+    private Map<String, Integer> otherLines = Map.of();
 
     public Builder name(String name) {
       this.name = name;
@@ -101,6 +103,11 @@ public record ContributorStats(
       return this;
     }
 
+    public Builder otherLines(Map<String, Integer> otherLines) {
+      this.otherLines = Map.copyOf(otherLines);
+      return this;
+    }
+
     public ContributorStats build() {
       return new ContributorStats(
           name,
@@ -112,7 +119,8 @@ public record ContributorStats(
           deletions,
           languageStats,
           productionLines,
-          testLines);
+          testLines,
+          otherLines);
     }
   }
 }
