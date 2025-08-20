@@ -72,22 +72,12 @@ filenames:
 # Directory Classification
 # Files in these directories count as "production" code
 productionDirectories:
-  - src
-  - lib
-  - app
-  - source
-  - main
+  - src/main/java
   # Add your production directories here
 
 # Files in these directories count as "test" code
 testDirectories:
-  - test
-  - tests
-  - __tests__
-  - spec
-  - specs
-  - cypress
-  - e2e
+  - src/test/java
   # Add your test directories here
 
 # Email Aliases

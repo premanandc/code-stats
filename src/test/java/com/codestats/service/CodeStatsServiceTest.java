@@ -300,6 +300,7 @@ class CodeStatsServiceTest {
         File repositoryPath,
         LocalDateTime since,
         LocalDateTime until,
+        Integer maxCommits,
         Set<String> includeUsers,
         Set<String> excludeUsers) {
       if (throwException) {

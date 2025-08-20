@@ -48,18 +48,11 @@ public interface StatisticsAggregator {
    * @param filePath Path to check
    * @param productionPatterns List of patterns that indicate production code
    * @param testPatterns List of patterns that indicate test code
-   * @return true if this is production code, false if test code
+   * @return true if this is production code, false otherwise
    */
   default boolean isProductionCode(
       String filePath, List<String> productionPatterns, List<String> testPatterns) {
     String lowerPath = filePath.toLowerCase();
-
-    // Check test patterns first (more specific)
-    for (String testPattern : testPatterns) {
-      if (lowerPath.contains(testPattern.toLowerCase())) {
-        return false;
-      }
-    }
 
     // Check production patterns
     for (String prodPattern : productionPatterns) {
@@ -68,8 +61,29 @@ public interface StatisticsAggregator {
       }
     }
 
-    // Default to production if no pattern matches
-    return true;
+    return false;
+  }
+
+  /**
+   * Determine if a file path represents test code.
+   *
+   * @param filePath Path to check
+   * @param productionPatterns List of patterns that indicate production code
+   * @param testPatterns List of patterns that indicate test code
+   * @return true if this is test code, false otherwise
+   */
+  default boolean isTestCode(
+      String filePath, List<String> productionPatterns, List<String> testPatterns) {
+    String lowerPath = filePath.toLowerCase();
+
+    // Check test patterns
+    for (String testPattern : testPatterns) {
+      if (lowerPath.contains(testPattern.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

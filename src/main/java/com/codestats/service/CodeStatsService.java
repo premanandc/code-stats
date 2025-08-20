@@ -50,6 +50,7 @@ public class CodeStatsService {
               request.repositoryPath(),
               request.since(),
               request.until(),
+              request.maxCommits(),
               request.includeUsers(),
               request.excludeUsers());
 
@@ -116,6 +117,7 @@ public class CodeStatsService {
       Integer days,
       LocalDateTime since,
       LocalDateTime until,
+      Integer maxCommits,
       Set<String> includeUsers,
       Set<String> excludeUsers) {
 
@@ -129,6 +131,7 @@ public class CodeStatsService {
       private Integer days;
       private LocalDateTime since;
       private LocalDateTime until;
+      private Integer maxCommits;
       private Set<String> includeUsers = Set.of();
       private Set<String> excludeUsers = Set.of();
 
@@ -157,6 +160,11 @@ public class CodeStatsService {
         return this;
       }
 
+      public Builder maxCommits(Integer maxCommits) {
+        this.maxCommits = maxCommits;
+        return this;
+      }
+
       public Builder includeUsers(Set<String> includeUsers) {
         this.includeUsers = Set.copyOf(includeUsers);
         return this;
@@ -169,7 +177,7 @@ public class CodeStatsService {
 
       public CodeStatsRequest build() {
         return new CodeStatsRequest(
-            repositoryPath, config, days, since, until, includeUsers, excludeUsers);
+            repositoryPath, config, days, since, until, maxCommits, includeUsers, excludeUsers);
       }
     }
   }

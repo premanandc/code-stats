@@ -107,13 +107,14 @@ public class SimpleStatisticsAggregator implements StatisticsAggregator {
     for (GitCommit commit : commits) {
       for (FileChange fileChange : commit.fileChanges()) {
         String language = getLanguageForFile(fileChange.path(), extensionMapping, filenameMapping);
-        int totalLines = fileChange.totalLinesChanged();
+        int netLines = fileChange.netLines();
 
         if (isProductionCode(fileChange.path(), productionPatterns, testPatterns)) {
-          productionLines.merge(language, totalLines, Integer::sum);
-        } else {
-          testLines.merge(language, totalLines, Integer::sum);
+          productionLines.merge(language, netLines, Integer::sum);
+        } else if (isTestCode(fileChange.path(), productionPatterns, testPatterns)) {
+          testLines.merge(language, netLines, Integer::sum);
         }
+        // Files that are neither production nor test are not counted in code distribution
       }
     }
 

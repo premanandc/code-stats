@@ -17,6 +17,7 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
       File repositoryPath,
       LocalDateTime since,
       LocalDateTime until,
+      Integer maxCommits,
       Set<String> includeUsers,
       Set<String> excludeUsers) {
 
@@ -25,7 +26,7 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
     }
 
     try {
-      List<String> command = buildGitLogCommandList(since, until, includeUsers, excludeUsers);
+      List<String> command = buildGitLogCommandList(since, until, maxCommits, includeUsers, excludeUsers);
 
       ProcessBuilder processBuilder = new ProcessBuilder(command);
       processBuilder.directory(repositoryPath);
@@ -59,12 +60,13 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
   private List<String> buildGitLogCommandList(
       LocalDateTime since,
       LocalDateTime until,
+      Integer maxCommits,
       Set<String> includeUsers,
       Set<String> excludeUsers) {
     List<String> command = new ArrayList<>();
     command.add("git");
     command.add("log");
-    command.add("--stat");
+    command.add("--numstat");
     command.add("--pretty=format:commit %H%nAuthor: %an <%ae>%nDate:   %ad%n%n    %s%n");
     command.add("--date=iso");
     command.add("--no-merges"); // Skip merge commits for cleaner stats
@@ -75,6 +77,11 @@ public class ProcessGitCommandExecutor implements GitCommandExecutor {
     }
     if (until != null) {
       command.add("--until=" + sanitizeGitParameter(formatDateForGit(until)));
+    }
+
+    // Limit number of commits
+    if (maxCommits != null) {
+      command.add("--max-count=" + maxCommits);
     }
 
     // User filters with sanitization

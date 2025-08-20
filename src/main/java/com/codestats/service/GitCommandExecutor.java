@@ -17,6 +17,7 @@ public interface GitCommandExecutor {
    * @param repositoryPath Path to git repository
    * @param since Start date filter (optional)
    * @param until End date filter (optional)
+   * @param maxCommits Maximum number of commits to retrieve (optional)
    * @param includeUsers Set of user emails to include (optional)
    * @param excludeUsers Set of user emails to exclude (optional)
    * @return Git log output as string
@@ -26,6 +27,7 @@ public interface GitCommandExecutor {
       File repositoryPath,
       LocalDateTime since,
       LocalDateTime until,
+      Integer maxCommits,
       Set<String> includeUsers,
       Set<String> excludeUsers);
 
@@ -49,10 +51,11 @@ public interface GitCommandExecutor {
   default String buildGitLogCommand(
       LocalDateTime since,
       LocalDateTime until,
+      Integer maxCommits,
       Set<String> includeUsers,
       Set<String> excludeUsers) {
     StringBuilder cmd = new StringBuilder();
-    cmd.append("git log --stat --pretty=fuller");
+    cmd.append("git log --numstat --pretty=fuller");
 
     // Date filters
     if (since != null) {
@@ -60,6 +63,11 @@ public interface GitCommandExecutor {
     }
     if (until != null) {
       cmd.append(" --until=\"").append(formatDateForGit(until)).append("\"");
+    }
+
+    // Limit number of commits
+    if (maxCommits != null) {
+      cmd.append(" --max-count=").append(maxCommits);
     }
 
     // User filters

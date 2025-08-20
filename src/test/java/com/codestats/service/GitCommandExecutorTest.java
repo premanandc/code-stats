@@ -79,7 +79,7 @@ class GitCommandExecutorTest {
     // Given - No filters
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, null, null);
 
     // Then
     assertThat(command).isEqualTo("git log --stat --pretty=fuller");
@@ -91,7 +91,7 @@ class GitCommandExecutorTest {
     LocalDateTime since = LocalDateTime.of(2024, 1, 1, 0, 0, 0);
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(since, null, null, null);
+    String command = gitCommandExecutor.buildGitLogCommand(since, null, null, null, null);
 
     // Then
     assertThat(command).isEqualTo("git log --stat --pretty=fuller --since=\"2024-01-01T00:00:00\"");
@@ -103,7 +103,7 @@ class GitCommandExecutorTest {
     LocalDateTime until = LocalDateTime.of(2024, 12, 31, 23, 59, 59);
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, until, null, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, until, null, null, null);
 
     // Then
     assertThat(command).isEqualTo("git log --stat --pretty=fuller --until=\"2024-12-31T23:59:59\"");
@@ -116,7 +116,7 @@ class GitCommandExecutorTest {
     LocalDateTime until = LocalDateTime.of(2024, 12, 31, 23, 59, 59);
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(since, until, null, null);
+    String command = gitCommandExecutor.buildGitLogCommand(since, until, null, null, null);
 
     // Then
     assertThat(command)
@@ -130,7 +130,7 @@ class GitCommandExecutorTest {
     Set<String> includeUsers = Set.of("john@example.com");
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, null, includeUsers, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
     assertThat(command).isEqualTo("git log --stat --pretty=fuller --author=\"john@example.com\"");
@@ -142,7 +142,7 @@ class GitCommandExecutorTest {
     Set<String> includeUsers = Set.of("john@example.com", "jane@example.com");
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, null, includeUsers, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
     assertThat(command).contains("git log --stat --pretty=fuller");
@@ -156,7 +156,7 @@ class GitCommandExecutorTest {
     Set<String> includeUsers = Set.of();
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, null, includeUsers, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
     assertThat(command).isEqualTo("git log --stat --pretty=fuller");
@@ -172,7 +172,7 @@ class GitCommandExecutorTest {
 
     // When
     String command =
-        gitCommandExecutor.buildGitLogCommand(since, until, includeUsers, excludeUsers);
+        gitCommandExecutor.buildGitLogCommand(since, until, null, includeUsers, excludeUsers);
 
     // Then
     assertThat(command).contains("git log --stat --pretty=fuller");
@@ -189,7 +189,7 @@ class GitCommandExecutorTest {
     Set<String> includeUsers = Set.of("user.name+tag@domain.co.uk");
 
     // When
-    String command = gitCommandExecutor.buildGitLogCommand(null, null, includeUsers, null);
+    String command = gitCommandExecutor.buildGitLogCommand(null, null, null, includeUsers, null);
 
     // Then
     assertThat(command).contains("--author=\"user.name+tag@domain.co.uk\"");
@@ -202,6 +202,7 @@ class GitCommandExecutorTest {
         File repositoryPath,
         LocalDateTime since,
         LocalDateTime until,
+        Integer maxCommits,
         Set<String> includeUsers,
         Set<String> excludeUsers) {
       return "mock git output";

@@ -27,7 +27,7 @@ class ProcessGitCommandExecutorTest {
     // Given - tempDir is not a git repository
 
     // When & Then
-    assertThatThrownBy(() -> executor.executeGitLog(tempDir, null, null, null, null))
+    assertThatThrownBy(() -> executor.executeGitLog(tempDir, null, null, null, null, null))
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Not a git repository");
   }
@@ -40,7 +40,7 @@ class ProcessGitCommandExecutorTest {
     File nonExistent = new File(tempDir, "nonexistent");
 
     // When & Then
-    assertThatThrownBy(() -> executor.executeGitLog(nonExistent, null, null, null, null))
+    assertThatThrownBy(() -> executor.executeGitLog(nonExistent, null, null, null, null, null))
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Not a git repository");
   }
@@ -80,7 +80,7 @@ class ProcessGitCommandExecutorTest {
     Set<String> includeUsers = Set.of("test@example.com");
 
     // When
-    String command = executor.buildGitLogCommand(since, null, includeUsers, null);
+    String command = executor.buildGitLogCommand(since, null, null, includeUsers, null);
 
     // Then
     assertThat(command).contains("git log --stat --pretty=fuller");

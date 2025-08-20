@@ -56,6 +56,11 @@ public class Main implements Callable<Integer> {
   private String until;
 
   @Option(
+      names = {"--max-commits"},
+      description = "Maximum number of commits to analyze (for debugging)")
+  private Integer maxCommits;
+
+  @Option(
       names = {"--include-users"},
       description = "Comma-separated list of user emails to include",
       split = ",")
@@ -132,6 +137,7 @@ public class Main implements Callable<Integer> {
               .days(days)
               .since(sinceDate)
               .until(untilDate)
+              .maxCommits(maxCommits)
               .includeUsers(includeUserSet)
               .excludeUsers(excludeUserSet)
               .build();

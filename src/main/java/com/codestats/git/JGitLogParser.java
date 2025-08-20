@@ -27,7 +27,7 @@ public class JGitLogParser implements GitLogParser {
           "^\\s*(\\d+) files? changed(?:, (\\d+) insertions?\\(\\+\\))?(?:, (\\d+) deletions?\\(\\-\\))?",
           Pattern.MULTILINE);
   private static final Pattern FILE_CHANGE_PATTERN =
-      Pattern.compile("^\\s*(.+?)\\s*\\|\\s*(\\d+)\\s*([+\\-]+)?", Pattern.MULTILINE);
+      Pattern.compile("^(\\d+)\\s+(\\d+)\\s+(.+)$", Pattern.MULTILINE);
 
   @Override
   public List<GitCommit> parseCommits(String gitLogOutput) {
@@ -160,30 +160,25 @@ public class JGitLogParser implements GitLogParser {
     Matcher matcher = FILE_CHANGE_PATTERN.matcher(commitBlock);
 
     while (matcher.find()) {
-      String filePath = matcher.group(1).trim();
-      int totalChanges = Integer.parseInt(matcher.group(2));
-      String changeMarkers = matcher.groupCount() > 2 ? matcher.group(3) : "";
+      String insertionsStr = matcher.group(1);
+      String deletionsStr = matcher.group(2);
+      String filePath = matcher.group(3).trim();
 
       // Skip file renames - they don't represent actual code changes
       if (isFileRename(filePath)) {
         continue;
       }
 
-      // Count + and - markers to estimate insertions/deletions
+      // Parse insertions and deletions from numstat format
       int insertions = 0;
       int deletions = 0;
-
-      if (changeMarkers != null) {
-        for (char c : changeMarkers.toCharArray()) {
-          if (c == '+') insertions++;
-          else if (c == '-') deletions++;
-        }
+      
+      // Handle binary files (git outputs "-" for binary files)
+      if (!insertionsStr.equals("-")) {
+        insertions = Integer.parseInt(insertionsStr);
       }
-
-      // If no markers, assume all changes are modifications
-      if (insertions == 0 && deletions == 0) {
-        insertions = totalChanges / 2;
-        deletions = totalChanges / 2;
+      if (!deletionsStr.equals("-")) {
+        deletions = Integer.parseInt(deletionsStr);
       }
 
       changes.add(new FileChange(filePath, insertions, deletions, FileChange.ChangeType.MODIFIED));
@@ -203,12 +198,24 @@ public class JGitLogParser implements GitLogParser {
   }
 
   private int[] parseStats(String commitBlock) {
-    Matcher matcher = STATS_PATTERN.matcher(commitBlock);
-    if (matcher.find()) {
-      int insertions = matcher.group(2) != null ? Integer.parseInt(matcher.group(2)) : 0;
-      int deletions = matcher.group(3) != null ? Integer.parseInt(matcher.group(3)) : 0;
-      return new int[] {insertions, deletions};
+    // With --numstat, we need to calculate totals from individual file stats
+    int totalInsertions = 0;
+    int totalDeletions = 0;
+    
+    Matcher matcher = FILE_CHANGE_PATTERN.matcher(commitBlock);
+    while (matcher.find()) {
+      String insertionsStr = matcher.group(1);
+      String deletionsStr = matcher.group(2);
+      
+      // Handle binary files (git outputs "-" for binary files)
+      if (!insertionsStr.equals("-")) {
+        totalInsertions += Integer.parseInt(insertionsStr);
+      }
+      if (!deletionsStr.equals("-")) {
+        totalDeletions += Integer.parseInt(deletionsStr);
+      }
     }
-    return new int[] {0, 0};
+    
+    return new int[] {totalInsertions, totalDeletions};
   }
 }
