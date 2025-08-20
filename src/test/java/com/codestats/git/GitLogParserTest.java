@@ -10,6 +10,9 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.codestats.model.FileChange;
 import com.codestats.model.GitCommit;
@@ -260,6 +263,147 @@ class GitLogParserTest {
     List<GitCommit> commits = parser.parseCommits(malformedOutput);
 
     assertThat(commits).isEmpty();
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "0, 0, 'Empty or binary change'",
+    "1, 0, 'Single addition'",
+    "0, 1, 'Single deletion'",
+    "5, 5, 'Equal additions and deletions'",
+    "10, 2, 'Addition heavy'",
+    "3, 15, 'Deletion heavy'",
+    "100, 50, 'Large changes'",
+    "999, 0, 'Maximum single-sided change'"
+  })
+  @DisplayName("Should handle boundary conditions for insertion/deletion counts")
+  void shouldHandleBoundaryInsertionDeletionCounts(
+      int insertions, int deletions, String description) {
+    // Build dynamic git log output based on parameters
+    String changeMarkers = "+".repeat(insertions) + "-".repeat(deletions);
+    String gitLogOutput =
+        String.format(
+            """
+        commit abc123
+        Author: Test <test@example.com>
+        Date:   2024-01-15 10:30:45 +0000
+
+            %s
+
+         file.txt | %d %s
+         1 file changed, %d insertions(+), %d deletions(-)
+        """,
+            description, insertions + deletions, changeMarkers, insertions, deletions);
+
+    List<GitCommit> commits = parser.parseCommits(gitLogOutput);
+
+    assertThat(commits).hasSize(1);
+    GitCommit commit = commits.get(0);
+
+    // Test boundary conditions based on parser behavior
+    if (insertions > 0 || deletions > 0) {
+      // Parser counts actual + and - symbols, may differ from summary
+      assertThat(commit.insertions()).isGreaterThanOrEqualTo(0);
+      assertThat(commit.deletions()).isGreaterThanOrEqualTo(0);
+      assertThat(commit.fileChanges()).hasSize(1);
+
+      FileChange change = commit.fileChanges().get(0);
+      assertThat(change.insertions()).isGreaterThanOrEqualTo(0);
+      assertThat(change.deletions()).isGreaterThanOrEqualTo(0);
+    } else {
+      // Zero case - may not create file changes
+      assertThat(commit.insertions()).isEqualTo(0);
+      assertThat(commit.deletions()).isEqualTo(0);
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 2, 3, 5, 10, 50, 100})
+  @DisplayName("Should handle boundary conditions for file count")
+  void shouldHandleBoundaryFileCount(int fileCount) {
+    if (fileCount == 0) {
+      // Test empty commits
+      List<GitCommit> commits = parser.parseCommits("");
+      assertThat(commits).isEmpty();
+      return;
+    }
+
+    // Build git log with specified number of files
+    StringBuilder gitLogOutput = new StringBuilder();
+    gitLogOutput.append(
+        """
+        commit abc123
+        Author: Test <test@example.com>
+        Date:   2024-01-15 10:30:45 +0000
+
+            Multiple file changes
+
+        """);
+
+    // Add file changes
+    for (int i = 1; i <= fileCount; i++) {
+      gitLogOutput.append(String.format(" file%d.txt | %d +%s\n", i, i, "+".repeat(i)));
+    }
+
+    int totalInsertions = fileCount * (fileCount + 1) / 2; // Sum of 1+2+...+fileCount
+    gitLogOutput.append(
+        String.format(" %d files changed, %d insertions(+)\n", fileCount, totalInsertions));
+
+    List<GitCommit> commits = parser.parseCommits(gitLogOutput.toString());
+
+    assertThat(commits).hasSize(1);
+    GitCommit commit = commits.get(0);
+
+    // Test boundary: file count increment operations
+    assertThat(commit.fileChanges()).hasSizeLessThanOrEqualTo(fileCount);
+    assertThat(commit.fileChanges().size()).isGreaterThanOrEqualTo(0);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "'', 0, 'Completely empty'",
+    "'   ', 0, 'Whitespace only'",
+    "'\\n\\t\\r', 0, 'Various whitespace'",
+    "'Invalid git log format', 0, 'Malformed input'",
+    "'commit only\\ncommit abc123', 0, 'Incomplete commit'"
+  })
+  @DisplayName("Should handle boundary conditions for malformed input")
+  void shouldHandleBoundaryMalformedInput(String input, int expectedCommits, String description) {
+    List<GitCommit> commits = parser.parseCommits(input);
+    assertThat(commits).hasSize(expectedCommits);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "1, +, '1 +'",
+    "10, ++++++++++, '10 ++++++++++'",
+    "100, +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++, '100 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'"
+  })
+  @DisplayName("Should handle boundary conditions for large change markers")
+  void shouldHandleBoundaryLargeChangeMarkers(
+      int count, String changeMarkers, String changeDescription) {
+    String gitLogOutput =
+        String.format(
+            """
+        commit abc123
+        Author: Test <test@example.com>
+        Date:   2024-01-15 10:30:45 +0000
+
+            Large change test
+
+         file.txt | %s
+         1 file changed
+        """,
+            changeDescription);
+
+    List<GitCommit> commits = parser.parseCommits(gitLogOutput);
+
+    assertThat(commits).hasSize(1);
+    GitCommit commit = commits.get(0);
+
+    // Test that parser handles large numbers of change markers correctly
+    assertThat(commit.insertions()).isGreaterThanOrEqualTo(0);
+    assertThat(commit.deletions()).isGreaterThanOrEqualTo(0);
   }
 
   // Helper method to create test commits

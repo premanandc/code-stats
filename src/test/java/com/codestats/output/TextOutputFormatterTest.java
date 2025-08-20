@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.codestats.model.ContributorStats;
 import com.codestats.model.LanguageStats;
@@ -414,5 +418,163 @@ class TextOutputFormatterTest {
   private CodeStatsService.CodeStatsResult createErrorResult(String errorMessage) {
     return new CodeStatsService.CodeStatsResult(
         List.of(), 0, new File("/test/repo"), null, null, false, errorMessage);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "1, 1, 0, 1, '100.0%', 'Single contribution'",
+    "0, 0, 0, 0, '0.0%', 'Zero contribution'",
+    "1, 5, 5, 1, '100.0%', 'Zero net changes'",
+    "10, 100, 0, 5, '100.0%', 'Addition only'",
+    "5, 0, 50, 3, '100.0%', 'Deletion only'",
+    "999, 999, 999, 999, '100.0%', 'Maximum values'"
+  })
+  @DisplayName("Should handle boundary conditions for single contributor")
+  void shouldHandleBoundaryConditionsSingleContributor(
+      int commits,
+      int insertions,
+      int deletions,
+      int files,
+      String expectedPercentage,
+      String description) {
+
+    var contributor =
+        createTestContributor(
+            "Test Dev", "test@example.com", commits, insertions, deletions, files);
+    var result = createSuccessResult(List.of(contributor));
+
+    String output = formatterWithoutColors.format(result);
+
+    assertThat(output).contains("Test Dev");
+    assertThat(output).contains(expectedPercentage);
+    assertThat(output).contains("Files changed: " + files);
+    assertThat(output).contains("+" + insertions + " -" + deletions);
+
+    // Test net calculation boundary
+    int netChange = insertions - deletions;
+    if (netChange > 0) {
+      assertThat(output).contains("net: +" + netChange);
+    } else if (netChange < 0) {
+      assertThat(output).contains("net: " + netChange);
+    } else {
+      assertThat(output).contains("net: 0");
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 2, 5, 10, 50, 100})
+  @DisplayName("Should handle boundary conditions for contributor count")
+  void shouldHandleBoundaryContributorCount(int contributorCount) {
+    if (contributorCount == 0) {
+      // Test empty result
+      var emptyResult = createSuccessResult(List.of());
+      String output = formatterWithoutColors.format(emptyResult);
+      assertThat(output).contains("📊 No commits found");
+      return;
+    }
+
+    // Create specified number of contributors
+    var contributors = new java.util.ArrayList<ContributorStats>();
+    for (int i = 1; i <= contributorCount; i++) {
+      contributors.add(
+          createTestContributor(
+              "Dev" + i,
+              "dev" + i + "@example.com",
+              contributorCount - i + 1, // Decreasing commits for percentage variety
+              (contributorCount - i + 1) * 10,
+              i,
+              i));
+    }
+
+    var result = createSuccessResult(contributors);
+    String output = formatterWithoutColors.format(result);
+
+    // Test boundary: all contributors should be listed
+    for (int i = 1; i <= contributorCount; i++) {
+      assertThat(output).contains("Dev" + i);
+    }
+
+    // Test that percentage calculations work for any count
+    if (contributorCount == 1) {
+      assertThat(output).contains("100.0%");
+    } else {
+      // Multiple contributors should have various percentages
+      assertThat(output).contains("%");
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "0, 0, 'No changes'",
+    "1, 0, 'Single addition'",
+    "0, 1, 'Single deletion'",
+    "50, 50, 'Equal changes'",
+    "1000, 1, 'Large addition'",
+    "1, 1000, 'Large deletion'",
+    "9999, 9999, 'Maximum changes'"
+  })
+  @DisplayName("Should handle boundary conditions for change calculations")
+  void shouldHandleBoundaryChangeCalculations(int insertions, int deletions, String description) {
+    var contributor =
+        createTestContributor("Test Dev", "test@example.com", 1, insertions, deletions, 1);
+    var result = createSuccessResult(List.of(contributor));
+
+    String output = formatterWithoutColors.format(result);
+
+    // Test that large numbers are formatted correctly
+    assertThat(output).contains("+" + insertions + " -" + deletions);
+
+    // Test net calculation boundary conditions
+    int net = insertions - deletions;
+    if (net == 0) {
+      assertThat(output).contains("net: 0");
+    } else if (net > 0) {
+      assertThat(output).contains("net: +" + net);
+    } else {
+      assertThat(output).contains("net: " + net);
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 1, 2, 3, 10, 100})
+  @DisplayName("Should handle boundary conditions for email alias count")
+  void shouldHandleBoundaryEmailAliasCount(int aliasCount) {
+    if (aliasCount == 0) {
+      return; // Skip 0 case as it's not valid for this test
+    }
+
+    // Create contributor with specified number of email aliases
+    var emails = new java.util.ArrayList<String>();
+    emails.add("primary@example.com");
+    for (int i = 1; i < aliasCount; i++) {
+      emails.add("alias" + i + "@example.com");
+    }
+
+    var contributor =
+        new ContributorStats(
+            "Multi Email Dev",
+            "primary@example.com",
+            emails,
+            5,
+            3,
+            50,
+            10,
+            Map.of(),
+            Map.of(),
+            Map.of());
+
+    var result = createSuccessResult(List.of(contributor));
+    String output = formatterWithoutColors.format(result);
+
+    assertThat(output).contains("Multi Email Dev");
+    assertThat(output).contains("primary@example.com");
+
+    if (aliasCount > 1) {
+      assertThat(output).contains("Also commits as:");
+      // Should show additional aliases
+      for (int i = 1; i < aliasCount; i++) {
+        assertThat(output).contains("alias" + i + "@example.com");
+      }
+    }
   }
 }
