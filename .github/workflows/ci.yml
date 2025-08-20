@@ -39,19 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dcdb-
 
-      - name: Run tests
-        run: ./mvnw clean test -B
+      - name: Run build with quality checks
+        run: ./mvnw clean verify -B -DnvdApiKey="${NVD_API_KEY}"
 
-      - name: Run security analysis (SpotBugs + OWASP Dependency-Check)
-        run: |
-          ./mvnw spotbugs:check -B
-          # Pass the API key explicitly so it works even if pom.xml isn't configured for env var
-          ./mvnw dependency-check:check -B -DnvdApiKey="${NVD_API_KEY}"
-
-      - name: Run code formatting check
-        run: ./mvnw spotless:check -B
-
-      - name: Build JAR
+      - name: Build final JAR
         run: ./mvnw package -B -DskipTests
 
       - name: Upload build artifacts

@@ -271,7 +271,9 @@ class TextOutputFormatterTest {
     String output = formatterWithColors.format(result);
 
     // Then
-    assertThat(output).contains("/test/repo");
+    // Use the actual absolute path to make test OS-independent
+    String expectedPath = result.repositoryPath().getAbsolutePath();
+    assertThat(output).contains(expectedPath);
   }
 
   @Test
