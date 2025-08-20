@@ -125,7 +125,9 @@ class CodeStatsServiceTest {
             Map.of(),
             List.of("src"),
             List.of("test"),
-            Map.of("alice@company.com", Set.of("alice@personal.com")));
+            Map.of("alice@company.com", Set.of("alice@personal.com")),
+            List.of(),
+            List.of());
 
     CodeStatsService.CodeStatsRequest request =
         CodeStatsService.CodeStatsRequest.builder()

@@ -38,7 +38,9 @@ class CodeStatsConfigTest {
             Map.of("dockerfile", "Docker"),
             List.of("src"),
             List.of("test"),
-            Map.of("alice@company.com", Set.of("alice@personal.com")));
+            Map.of("alice@company.com", Set.of("alice@personal.com")),
+            List.of(),
+            List.of());
 
     CodeStatsConfig override =
         new CodeStatsConfig(
@@ -46,8 +48,9 @@ class CodeStatsConfigTest {
             Map.of("makefile", "Makefile"), // Override filename mapping
             List.of("lib", "app"), // Replace production dirs
             List.of(), // Keep base test dirs (empty override)
-            Map.of("bob@company.com", Set.of("bob@contractor.com")) // Add new alias
-            );
+            Map.of("bob@company.com", Set.of("bob@contractor.com")), // Add new alias
+            List.of("alice@company.com"),
+            List.of("bot@ci.com"));
 
     CodeStatsConfig merged = base.mergeWith(override);
 
@@ -77,7 +80,9 @@ class CodeStatsConfigTest {
   @DisplayName("Should handle empty configurations in merge")
   void shouldHandleEmptyConfigurationsMerge() {
     CodeStatsConfig base = CodeStatsConfig.getDefault();
-    CodeStatsConfig empty = new CodeStatsConfig(Map.of(), Map.of(), List.of(), List.of(), Map.of());
+    CodeStatsConfig empty =
+        new CodeStatsConfig(
+            Map.of(), Map.of(), List.of(), List.of(), Map.of(), List.of(), List.of());
 
     CodeStatsConfig merged = base.mergeWith(empty);
 
@@ -87,6 +92,47 @@ class CodeStatsConfigTest {
     assertThat(merged.productionDirectories()).isEqualTo(base.productionDirectories());
     assertThat(merged.testDirectories()).isEqualTo(base.testDirectories());
     assertThat(merged.aliases()).isEqualTo(base.aliases());
+    assertThat(merged.includeUsers()).isEqualTo(base.includeUsers());
+    assertThat(merged.excludeUsers()).isEqualTo(base.excludeUsers());
+  }
+
+  @Test
+  @DisplayName("Should merge user filtering correctly")
+  void shouldMergeUserFiltering() {
+    CodeStatsConfig base =
+        new CodeStatsConfig(
+            Map.of(),
+            Map.of(),
+            List.of(),
+            List.of(),
+            Map.of(),
+            List.of("alice@company.com"),
+            List.of("bot@ci.com"));
+
+    CodeStatsConfig override =
+        new CodeStatsConfig(
+            Map.of(),
+            Map.of(),
+            List.of(),
+            List.of(),
+            Map.of(),
+            List.of("bob@company.com"),
+            List.of("spam@example.com"));
+
+    CodeStatsConfig merged = base.mergeWith(override);
+
+    // Override should replace base user lists
+    assertThat(merged.includeUsers()).containsExactly("bob@company.com");
+    assertThat(merged.excludeUsers()).containsExactly("spam@example.com");
+
+    // Test merging with empty lists (should keep base)
+    CodeStatsConfig emptyUsers =
+        new CodeStatsConfig(
+            Map.of(), Map.of(), List.of(), List.of(), Map.of(), List.of(), List.of());
+
+    CodeStatsConfig mergedEmpty = base.mergeWith(emptyUsers);
+    assertThat(mergedEmpty.includeUsers()).containsExactly("alice@company.com");
+    assertThat(mergedEmpty.excludeUsers()).containsExactly("bot@ci.com");
   }
 
   @Test

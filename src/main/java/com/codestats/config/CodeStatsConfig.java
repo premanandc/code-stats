@@ -13,7 +13,9 @@ public record CodeStatsConfig(
     Map<String, String> filenames,
     List<String> productionDirectories,
     List<String> testDirectories,
-    Map<String, Set<String>> aliases) {
+    Map<String, Set<String>> aliases,
+    List<String> includeUsers,
+    List<String> excludeUsers) {
 
   /** Get default configuration with sensible defaults. */
   public static CodeStatsConfig getDefault() {
@@ -22,7 +24,9 @@ public record CodeStatsConfig(
         getDefaultFilenames(),
         getDefaultProductionDirectories(),
         getDefaultTestDirectories(),
-        Map.of());
+        Map.of(),
+        List.of(),
+        List.of());
   }
 
   /** Merge this config with another, preferring values from the other config. */
@@ -34,7 +38,9 @@ public record CodeStatsConfig(
             ? this.productionDirectories
             : other.productionDirectories,
         other.testDirectories.isEmpty() ? this.testDirectories : other.testDirectories,
-        mergeAliases(this.aliases, other.aliases));
+        mergeAliases(this.aliases, other.aliases),
+        other.includeUsers.isEmpty() ? this.includeUsers : other.includeUsers,
+        other.excludeUsers.isEmpty() ? this.excludeUsers : other.excludeUsers);
   }
 
   private static Map<String, String> getDefaultExtensions() {

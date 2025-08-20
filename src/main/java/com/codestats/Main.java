@@ -125,9 +125,9 @@ public class Main implements Callable<Integer> {
       LocalDateTime sinceDate = parseDate(since);
       LocalDateTime untilDate = parseDate(until);
 
-      // Parse user filters
-      Set<String> includeUserSet = parseUserList(includeUsers);
-      Set<String> excludeUserSet = parseUserList(excludeUsers);
+      // Parse user filters (merge CLI with config)
+      Set<String> includeUserSet = mergeUsers(parseUsers(includeUsers), config.includeUsers());
+      Set<String> excludeUserSet = mergeUsers(parseUsers(excludeUsers), config.excludeUsers());
 
       // Build request
       CodeStatsService.CodeStatsRequest request =
@@ -188,7 +188,9 @@ public class Main implements Callable<Integer> {
                   Map.of(),
                   config.productionDirectories(),
                   config.testDirectories(),
-                  config.aliases()));
+                  config.aliases(),
+                  config.includeUsers(),
+                  config.excludeUsers()));
     }
 
     return config;
@@ -212,8 +214,11 @@ public class Main implements Callable<Integer> {
     List<String> productionDirs = extractStringList(configMap, "productionDirectories");
     List<String> testDirs = extractStringList(configMap, "testDirectories");
     Map<String, Set<String>> aliases = extractAliases(configMap);
+    List<String> includeUsers = extractStringList(configMap, "includeUsers");
+    List<String> excludeUsers = extractStringList(configMap, "excludeUsers");
 
-    return new CodeStatsConfig(extensions, filenames, productionDirs, testDirs, aliases);
+    return new CodeStatsConfig(
+        extensions, filenames, productionDirs, testDirs, aliases, includeUsers, excludeUsers);
   }
 
   @SuppressWarnings("unchecked")
@@ -294,12 +299,18 @@ public class Main implements Callable<Integer> {
     }
   }
 
-  private Set<String> parseUserList(String[] users) {
+  private Set<String> parseUsers(String[] users) {
     if (users == null || users.length == 0) {
       return Set.of();
     }
 
     return Set.of(users);
+  }
+
+  private Set<String> mergeUsers(Set<String> cliUsers, List<String> configUsers) {
+    Set<String> merged = new java.util.HashSet<>(cliUsers);
+    merged.addAll(configUsers);
+    return Set.copyOf(merged);
   }
 
   private Integer handleInitConfig() {
@@ -439,6 +450,17 @@ public class Main implements Callable<Integer> {
               #   - "John Doe <john.doe@company.com>"
 
               # Add your email aliases here
+
+            # User Filtering
+            # Include only specific users (if empty, includes all users)
+            includeUsers:
+              # - "alice@company.com"
+              # - "bob@company.com"
+
+            # Exclude specific users from analysis
+            excludeUsers:
+              # - "bot@ci.company.com"
+              # - "noreply@github.com"
             """;
   }
 

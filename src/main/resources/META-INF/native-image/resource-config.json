@@ -1,0 +1,18 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qapplication.properties\\E"
+      },
+      {
+        "pattern": "\\Q.*.yml\\E"
+      },
+      {
+        "pattern": "\\Q.*.yaml\\E"
+      },
+      {
+        "pattern": "\\Q.*.json\\E"
+      }
+    ]
+  }
+}
