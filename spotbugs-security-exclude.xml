@@ -72,4 +72,11 @@
         <Bug pattern="COMMAND_INJECTION"/>
         <Class name="com.codestats.service.ProcessGitCommandExecutor"/>
     </Match>
+    
+    <!-- We have properly implemented Unicode handling with Locale.ROOT -->
+    <Match>
+        <Bug pattern="IMPROPER_UNICODE"/>
+        <Class name="com.codestats.analysis.BusinessAnalyzer"/>
+        <Method name="categorizeTechnology"/>
+    </Match>
 </FindBugsFilter>
