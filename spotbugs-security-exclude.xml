@@ -4,29 +4,7 @@
     <Match>
         <Class name="~.*Test.*"/>
     </Match>
-    <Match>
-        <Class name="~.*test.*"/>
-    </Match>
-    
-    <!-- Exclude generated files -->
-    <Match>
-        <Source name="~.*generated.*"/>
-    </Match>
-    <Match>
-        <Class name="~.*generated.*"/>
-    </Match>
-    
-    <!-- Exclude specific non-security categories we don't want to analyze -->
-    <Match>
-        <Bug category="PERFORMANCE"/>
-    </Match>
-    <Match>
-        <Bug category="STYLE"/>
-    </Match>
-    <Match>
-        <Bug category="I18N"/>
-    </Match>
-    
+
     <!-- Exclude specific patterns that may be noisy but not security-critical -->
     <Match>
         <Bug pattern="DM_EXIT"/>
@@ -43,15 +21,7 @@
     <Match>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
-    
-    <!-- Allow System.out usage in CLI applications -->
-    <Match>
-        <Bug pattern="SYSTEM_OUT_PRINT"/>
-    </Match>
-    <Match>
-        <Bug pattern="SYSTEM_ERR_PRINT"/>
-    </Match>
-    
+
     <!-- Allow System.exit in main methods -->
     <Match>
         <Bug pattern="DM_EXIT"/>
