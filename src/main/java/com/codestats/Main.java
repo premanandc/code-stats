@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 import com.codestats.alias.SimpleAliasResolver;
 import com.codestats.config.CodeStatsConfig;
 import com.codestats.git.JGitLogParser;
+import com.codestats.output.ExecutiveDashboardFormatter;
 import com.codestats.output.JsonOutputFormatter;
 import com.codestats.output.OutputFormatter;
 import com.codestats.output.TextOutputFormatter;
@@ -83,6 +84,11 @@ public class Main implements Callable<Integer> {
   private boolean jsonOutput;
 
   @Option(
+      names = {"--dashboard"},
+      description = "Output results as executive dashboard with business intelligence")
+  private boolean dashboardOutput;
+
+  @Option(
       names = {"--ext"},
       description = "Custom file extensions mapping (format: ext1:Lang1,ext2:Lang2)")
   private String customExtensions;
@@ -146,8 +152,7 @@ public class Main implements Callable<Integer> {
       CodeStatsService.CodeStatsResult result = service.analyzeRepository(request);
 
       // Format and output results
-      OutputFormatter formatter =
-          jsonOutput ? new JsonOutputFormatter() : new TextOutputFormatter(!noColor);
+      OutputFormatter formatter = selectFormatter();
 
       System.out.println(formatter.format(result));
 
@@ -462,6 +467,19 @@ public class Main implements Callable<Integer> {
               # - "bot@ci.company.com"
               # - "noreply@github.com"
             """;
+  }
+
+  private OutputFormatter selectFormatter() {
+    if (dashboardOutput && jsonOutput) {
+      System.err.println("Warning: Both --dashboard and --json specified. Using dashboard format.");
+      return new ExecutiveDashboardFormatter(!noColor);
+    } else if (dashboardOutput) {
+      return new ExecutiveDashboardFormatter(!noColor);
+    } else if (jsonOutput) {
+      return new JsonOutputFormatter();
+    } else {
+      return new TextOutputFormatter(!noColor);
+    }
   }
 
   /**
