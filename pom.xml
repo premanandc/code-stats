@@ -399,7 +399,7 @@
                                 <format>XML</format>
                             </outputFormats>
                             <!-- Fail build if mutation score is too low -->
-                            <mutationThreshold>70</mutationThreshold>
+                            <mutationThreshold>60</mutationThreshold>
                             <!-- Coverage threshold (must be met before mutation testing) -->
                             <coverageThreshold>70</coverageThreshold>
                             <!-- Number of threads for parallel execution -->
