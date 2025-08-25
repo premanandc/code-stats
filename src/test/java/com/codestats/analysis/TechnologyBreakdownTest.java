@@ -211,20 +211,26 @@ class TechnologyBreakdownTest {
   @Test
   @DisplayName("Should sort technologies correctly with equal lines of code")
   void shouldSortTechnologiesWithEqualLines() {
-    List<TechnologyEntry> equalTechnologies =
+    List<TechnologyEntry> mixedTechnologies =
         List.of(
-            new TechnologyEntry("Java", 1000, 50.0, TechnologyCategory.BACKEND, "Backend value"),
+            new TechnologyEntry("Python", 2000, 40.0, TechnologyCategory.BACKEND, "Backend value"),
+            new TechnologyEntry("Java", 1000, 20.0, TechnologyCategory.BACKEND, "Backend value"),
             new TechnologyEntry(
-                "JavaScript", 1000, 50.0, TechnologyCategory.FRONTEND, "Frontend value"));
+                "JavaScript", 1000, 20.0, TechnologyCategory.FRONTEND, "Frontend value"),
+            new TechnologyEntry("CSS", 1000, 20.0, TechnologyCategory.FRONTEND, "Frontend value"));
 
     TechnologyBreakdown breakdown =
-        new TechnologyBreakdown(equalTechnologies, Map.of(), "Full-stack", "Mixed", List.of());
+        new TechnologyBreakdown(mixedTechnologies, Map.of(), "Full-stack", "Mixed", List.of());
 
-    List<TechnologyEntry> sorted = breakdown.getTopTechnologies(2);
+    List<TechnologyEntry> sorted = breakdown.getTopTechnologies(4);
 
-    // Should maintain stable sort order when lines are equal
-    assertThat(sorted).hasSize(2);
-    assertThat(sorted.stream().map(TechnologyEntry::language))
-        .containsExactlyInAnyOrder("Java", "JavaScript");
+    // Should maintain stable sort order: highest lines first, then original order for equal values
+    assertThat(sorted).hasSize(4);
+    assertThat(sorted.get(0).language()).isEqualTo("Python"); // 2000 lines (highest)
+    // The remaining three (Java, JavaScript, CSS) all have 1000 lines
+    // The comparator should return 0 for equal values, maintaining stable sort
+    List<String> equalLineLanguages =
+        sorted.subList(1, 4).stream().map(TechnologyEntry::language).toList();
+    assertThat(equalLineLanguages).containsExactly("Java", "JavaScript", "CSS");
   }
 }

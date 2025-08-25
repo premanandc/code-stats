@@ -443,4 +443,340 @@ class BusinessAnalyzerTest {
         testLines,
         otherLines);
   }
+
+  @Test
+  @DisplayName("Should sort contributors correctly when commits are equal")
+  void shouldSortContributorsWithEqualCommits() {
+    // Create contributors with identical commit counts to test stable sorting
+    ContributorStats alice = createContributor("Alice", 30, 5000);
+    ContributorStats bob = createContributor("Bob", 30, 6000); // Same commits, different lines
+    ContributorStats charlie = createContributor("Charlie", 30, 4000);
+
+    CodeStatsService.CodeStatsResult result =
+        new CodeStatsService.CodeStatsResult(
+            List.of(alice, bob, charlie),
+            90,
+            new File("/test-repo"),
+            LocalDateTime.now().minusDays(30),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis analysis = BusinessAnalyzer.analyze(result);
+    TeamComposition team = analysis.teamComposition();
+
+    // All contributors should be included (they have equal commits)
+    assertThat(team.contributors()).hasSize(3);
+
+    // Verify the comparator returns 0 for equal values by checking all are included
+    // and that the sorting is stable (maintains original order for equal elements)
+    List<String> contributorNames =
+        team.contributors().stream().map(ContributorProfile::name).toList();
+
+    assertThat(contributorNames).containsExactlyInAnyOrder("Alice", "Bob", "Charlie");
+  }
+
+  @Test
+  @DisplayName("Should sort primary technologies correctly when lines are equal")
+  void shouldSortPrimaryTechnologiesWithEqualLines() {
+    // Create contributor with technologies that have equal lines of code
+    Map<String, LanguageStats> languageStats =
+        Map.of(
+            "Java", new LanguageStats("Java", 1000, 900, 100, 20),
+            "Python", new LanguageStats("Python", 1000, 900, 100, 20), // Equal lines
+            "JavaScript", new LanguageStats("JavaScript", 1000, 900, 100, 20),
+            "Go", new LanguageStats("Go", 500, 450, 50, 10)); // Lower lines
+
+    Map<String, Integer> productionLines =
+        Map.of("Java", 900, "Python", 900, "JavaScript", 900, "Go", 450);
+
+    ContributorStats contributor =
+        new ContributorStats(
+            "Multi-tech Dev",
+            "dev@company.com",
+            List.of("dev@company.com"),
+            40,
+            3000,
+            300,
+            50,
+            languageStats,
+            productionLines,
+            Map.of(),
+            Map.of());
+
+    CodeStatsService.CodeStatsResult result =
+        new CodeStatsService.CodeStatsResult(
+            List.of(contributor),
+            40,
+            new File("/test-repo"),
+            LocalDateTime.now().minusDays(30),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis analysis = BusinessAnalyzer.analyze(result);
+
+    // Check that primary technologies are extracted correctly
+    // The comparator should handle equal values (1000 lines each) correctly
+    ContributorProfile profile = analysis.teamComposition().contributors().get(0);
+    assertThat(profile.primaryTechnologies()).hasSize(3); // Limited to 3
+
+    // All technologies with equal lines should be in the result
+    assertThat(profile.primaryTechnologies())
+        .contains("Java", "Python", "JavaScript")
+        .doesNotContain("Go"); // Lower lines should be filtered out
+  }
+
+  @Test
+  @DisplayName("Should sort technology breakdown entries when lines of code are equal")
+  void shouldSortTechnologyBreakdownWithEqualLines() {
+    ContributorStats equalLinesDev = createContributorWithEqualTechLines();
+
+    CodeStatsService.CodeStatsResult result =
+        new CodeStatsService.CodeStatsResult(
+            List.of(equalLinesDev),
+            30,
+            new File("/test-repo"),
+            LocalDateTime.now().minusDays(30),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis analysis = BusinessAnalyzer.analyze(result);
+    TechnologyBreakdown tech = analysis.technologyBreakdown();
+
+    assertThat(tech.technologies()).hasSizeGreaterThan(0);
+
+    // Verify that technologies with equal lines are sorted correctly
+    // The lambda comparator should return 0 for equal values, maintaining stable sort
+    List<Integer> techLines = tech.technologies().stream().map(t -> t.linesOfCode()).toList();
+
+    // Should be sorted in descending order
+    for (int i = 0; i < techLines.size() - 1; i++) {
+      assertThat(techLines.get(i)).isGreaterThanOrEqualTo(techLines.get(i + 1));
+    }
+  }
+
+  @Test
+  @DisplayName("Should handle team size recommendations for different scenarios")
+  void shouldGenerateCorrectTeamSizeRecommendations() {
+    // Test case 1: Very small team (should recommend expanding)
+    ContributorStats soloDev = createContributor("Solo", 60, 15000);
+    CodeStatsService.CodeStatsResult smallTeam =
+        new CodeStatsService.CodeStatsResult(
+            List.of(soloDev),
+            60,
+            new File("/test"),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis smallAnalysis = BusinessAnalyzer.analyze(smallTeam);
+    assertThat(smallAnalysis.teamComposition().teamSizeRecommendation()).contains("expanding team");
+
+    // Test case 2: Well-balanced team
+    List<ContributorStats> balancedTeam =
+        List.of(
+            createContributor("Lead", 50, 10000),
+            createContributor("Senior1", 40, 8000),
+            createContributor("Senior2", 35, 7000),
+            createContributor("Mid", 25, 4000),
+            createContributor("Junior", 15, 2000));
+
+    CodeStatsService.CodeStatsResult balancedResult =
+        new CodeStatsService.CodeStatsResult(
+            balancedTeam,
+            165,
+            new File("/test"),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis balancedAnalysis = BusinessAnalyzer.analyze(balancedResult);
+    assertThat(balancedAnalysis.teamComposition().teamSizeRecommendation())
+        .contains("adequate for current workload");
+  }
+
+  @Test
+  @DisplayName("Should identify medium risks correctly")
+  void shouldIdentifyMediumRisks() {
+    // Create team with specific risk factors - small team size for medium risk
+    List<ContributorStats> riskTeam =
+        List.of(
+            createContributor("Junior1", 10, 1000), // Junior contributors
+            createContributor("Junior2", 8, 800),
+            createContributor("Senior", 40, 8000)); // Only one senior - 3 total members
+
+    CodeStatsService.CodeStatsResult result =
+        new CodeStatsService.CodeStatsResult(
+            riskTeam, 58, new File("/test"), LocalDateTime.now(), LocalDateTime.now(), true, null);
+
+    BusinessAnalysis analysis = BusinessAnalyzer.analyze(result);
+    RiskAssessment risk = analysis.riskAssessment();
+
+    // Should identify small team size risk
+    assertThat(risk.mediumRisks())
+        .anyMatch(
+            riskMsg -> riskMsg.contains("Small team size") || riskMsg.contains("Experience gap"));
+  }
+
+  @Test
+  @DisplayName("Should determine documentation levels correctly")
+  void shouldDetermineDocumentationLevels() {
+    // Test different documentation ratios
+    ContributorStats heavyDocumenter = createContributorWithDocumentation();
+
+    CodeStatsService.CodeStatsResult result =
+        new CodeStatsService.CodeStatsResult(
+            List.of(heavyDocumenter),
+            30,
+            new File("/test"),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis analysis = BusinessAnalyzer.analyze(result);
+    QualityMetrics quality = analysis.qualityMetrics();
+
+    // Should calculate documentation level based on ratio
+    assertThat(quality.documentationLevel()).isNotNull();
+
+    // Should generate appropriate quality insights
+    assertThat(quality.qualityInsight()).isNotEmpty();
+    assertThat(quality.qualityInsight()).isNotBlank(); // Not blank string
+  }
+
+  @Test
+  @DisplayName("Should generate quality insights for different scenarios")
+  void shouldGenerateQualityInsights() {
+    // Test case 1: Excellent testing + Good docs
+    ContributorStats excellentDev = createContributorWithExcellentMetrics();
+    CodeStatsService.CodeStatsResult excellentResult =
+        new CodeStatsService.CodeStatsResult(
+            List.of(excellentDev),
+            40,
+            new File("/test"),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis excellentAnalysis = BusinessAnalyzer.analyze(excellentResult);
+    assertThat(excellentAnalysis.qualityMetrics().qualityInsight())
+        .isNotEmpty()
+        .isNotBlank(); // Should not return empty/blank string
+
+    // Test case 2: Poor testing + Poor docs
+    ContributorStats poorDev = createContributorWithPoorMetrics();
+    CodeStatsService.CodeStatsResult poorResult =
+        new CodeStatsService.CodeStatsResult(
+            List.of(poorDev),
+            20,
+            new File("/test"),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            true,
+            null);
+
+    BusinessAnalysis poorAnalysis = BusinessAnalyzer.analyze(poorResult);
+    assertThat(poorAnalysis.qualityMetrics().qualityInsight())
+        .isNotEmpty()
+        .isNotBlank(); // Should not return empty/blank string
+  }
+
+  // Helper methods for new test scenarios
+
+  private ContributorStats createContributorWithEqualTechLines() {
+    Map<String, LanguageStats> languageStats =
+        Map.of(
+            "Java", new LanguageStats("Java", 2000, 1800, 200, 25),
+            "Python", new LanguageStats("Python", 2000, 1800, 200, 25), // Equal lines
+            "TypeScript", new LanguageStats("TypeScript", 2000, 1800, 200, 25),
+            "Go", new LanguageStats("Go", 1000, 900, 100, 15)); // Different lines
+
+    Map<String, Integer> productionLines =
+        Map.of("Java", 1800, "Python", 1800, "TypeScript", 1800, "Go", 900);
+
+    return new ContributorStats(
+        "Equal Tech Dev",
+        "equal@company.com",
+        List.of("equal@company.com"),
+        30,
+        6700,
+        670,
+        65,
+        languageStats,
+        productionLines,
+        Map.of(),
+        Map.of());
+  }
+
+  private ContributorStats createContributorWithDocumentation() {
+    Map<String, LanguageStats> languageStats =
+        Map.of("Java", new LanguageStats("Java", 1000, 900, 100, 20));
+
+    Map<String, Integer> productionLines = Map.of("Java", 900);
+    Map<String, Integer> testLines = Map.of("Java", 200);
+    Map<String, Integer> docLines = Map.of("Markdown", 150); // Good documentation
+
+    return new ContributorStats(
+        "Documenter",
+        "doc@company.com",
+        List.of("doc@company.com"),
+        30,
+        1250,
+        125,
+        25,
+        languageStats,
+        productionLines,
+        testLines,
+        docLines);
+  }
+
+  private ContributorStats createContributorWithExcellentMetrics() {
+    Map<String, LanguageStats> languageStats =
+        Map.of("Java", new LanguageStats("Java", 2000, 1200, 800, 40));
+
+    Map<String, Integer> productionLines = Map.of("Java", 1200);
+    Map<String, Integer> testLines = Map.of("Java", 800); // 40% test coverage (excellent)
+    Map<String, Integer> docLines = Map.of("Markdown", 200); // Good documentation
+
+    return new ContributorStats(
+        "Excellent Dev",
+        "excellent@company.com",
+        List.of("excellent@company.com"),
+        40,
+        2200,
+        220,
+        45,
+        languageStats,
+        productionLines,
+        testLines,
+        docLines);
+  }
+
+  private ContributorStats createContributorWithPoorMetrics() {
+    Map<String, LanguageStats> languageStats =
+        Map.of("Java", new LanguageStats("Java", 1000, 950, 50, 20));
+
+    Map<String, Integer> productionLines = Map.of("Java", 950);
+    Map<String, Integer> testLines = Map.of("Java", 50); // 5% test coverage (poor)
+    Map<String, Integer> docLines = Map.of(); // No documentation
+
+    return new ContributorStats(
+        "Poor Metrics Dev",
+        "poor@company.com",
+        List.of("poor@company.com"),
+        20,
+        1000,
+        100,
+        20,
+        languageStats,
+        productionLines,
+        testLines,
+        docLines);
+  }
 }

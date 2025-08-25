@@ -184,6 +184,27 @@ class TeamCompositionTest {
         .isEqualTo("📊 Developing team - needs senior leadership");
   }
 
+  @Test
+  @DisplayName(
+      "Should handle boundary case with exactly 5 team members and 1 high impact contributor")
+  void shouldHandleBoundaryExactlyFiveMembersOneHighImpact() {
+    List<ContributorProfile> contributors =
+        List.of(
+            createContributor("Solo Lead", ContributorImpact.HIGH),
+            createContributor("Dev 1", ContributorImpact.MEDIUM),
+            createContributor("Dev 2", ContributorImpact.LOW),
+            createContributor("Dev 3", ContributorImpact.LOW),
+            createContributor("Dev 4", ContributorImpact.LOW));
+
+    // Exactly 5 total members with 1 high impact (boundary condition)
+    // Should NOT trigger "at risk" warning because totalMembers >= 5
+    TeamComposition exactlyFiveMembers =
+        new TeamComposition(contributors, 5, 5, "Exactly 5 member team");
+
+    assertThat(exactlyFiveMembers.getTeamHealthIndicator())
+        .isEqualTo("📊 Developing team - needs senior leadership");
+  }
+
   // Helper method to create test contributors
   private ContributorProfile createContributor(String name, ContributorImpact impact) {
     return new ContributorProfile(
